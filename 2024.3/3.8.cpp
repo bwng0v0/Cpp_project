@@ -1,12 +1,12 @@
 #include <iostream>
-
+//https://www.acmicpc.net/problem/1673
 int main(){
     using namespace std;
 
 int coupon,stamp,K,chicken;
 
-while (true){
-    cin>>coupon>>K;
+while (cin>>coupon>>K){ //EOF인식
+    
     stamp = 0;
     chicken = 0;
 
@@ -20,7 +20,7 @@ while (true){
     // 모든 스탬프 -> 쿠폰
     }
 
-    cout<<chicken<<endl;
+    cout<<chicken<<'\n';
 }
 
     return 0;
