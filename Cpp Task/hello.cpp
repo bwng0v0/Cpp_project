@@ -33,13 +33,8 @@ void println(Person* p) {
 
 void input(Person* p) {
     // TODO: [문제 9]
-    // 여기까지 했음
-    // 여기까지 했음
-    // 여기까지 했음
-    // 여기까지 했음
-    // 여기까지 했음
     cin>>p->name>>p->id>>p->weight>>p->married;
-    if (!cin) return;
+    cin.getline(p->address, sizeof(p->address), ':'); // 말씀하셨던 버퍼에 \n이 남아서 그걸 치우고 입력받기위해 두번씀
     cin.getline(p->address, sizeof(p->address), ':');
 }
 
@@ -164,6 +159,8 @@ void printlnTest() { // Menu item 1
 
     println(&p);
 }
+
+
 void initTest() { // Menu item 2
     Person u1;
     init(&u1, "u1", 10, 60.0, false, "Jongno-gu, Seoul");
@@ -171,11 +168,15 @@ void initTest() { // Menu item 2
     init(&u2, "u2", p.id, p.weight, p.married, p.address);
     println(&p);
 }
+
+
 void getter() { // Menu item 3
     // TODO: [문제 3 실행 결과]를 참조하여 구조체 변수 p의 각 멤버를 직접 출력하라.
     //       (cout << ... 문장을 직접 사용하라.)
     cout<< "name:"<<p.name<<", id:"<<p.id<<", weight:"<<p.weight<<", married:"<<p.married<<", address:"<<p.address<<'\n';
 }
+
+
 void setter() { // Menu item 4
     Person u;
     u = p;
@@ -187,14 +188,20 @@ void setter() { // Menu item 4
 
     println(&u);
 }
+
+
 void isSameTest() { // Menu item 5
     println(&p);
     Person u = { "Hong", 1, };
     cout << "p.isSame(): " << isSame(&p, u.name, u.id) << endl;
 }
+
+
 void whatAreYouDoingTest() { // Menu item 6
     whatAreYouDoing(&p);
 }
+
+
 void noBoolAlphaOutput() { // Menu item 7
     // married 멤버 값 또는 bool 값이 1, 0로 출력됨
     printlnTest();
@@ -204,19 +211,46 @@ void noBoolAlphaOutput() { // Menu item 7
     isSameTest();
     whatAreYouDoingTest();
 }
+
+
 void boolAlphaOutput() { // Menu item 8
     cout << boolalpha;    // married 멤버 값 또는 bool 값이 true, false로 출력되도록 설정
     noBoolAlphaOutput();
     cout << noboolalpha;  // 원래 상태로 복구함
 }
+
+
 void noBoolAlphaInputPerson() { // Menu item 9
     // married 멤버 값 또는 bool 값을 0 또는 1로 입력
     // HongGilDong 0 71.5 1 :Gwangju Nam-gu Bongseon-dong 21:
     if (UI::inputPerson(&p)) // 입력시 정수 또는 실수 값을 일반 문자로 잘못 입력하지 않은 경우
         println(&p);
 }
-void   boolAlphaInputPerson() { }
-void dataTypeSize() { }
+
+
+void boolAlphaInputPerson() { // Menu item 10
+    cout << boolalpha;
+    // 아래는 married 멤버 값 또는 bool 값을 true 또는 false로 입력받도록 설정
+    cin  >> boolalpha;
+    // 아래 입력 인적정보에서 married 멤버 값이 1이 아닌 true임
+    // Hong 1 71.5 true :Gwangju Nam-gu Bongseon-dong 21:
+    if (UI::inputPerson(&p))  // 입력시 정수 또는 실수 값을 일반 문자로 잘못 입력하지 않은 경우
+        println(&p);
+    cin  >> noboolalpha; // 원래 상태로 복구함
+    cout << noboolalpha; // 원래 상태로 복구함
+}
+
+
+void dataTypeSize() { // Menu item 11
+    cout << "bool   size: " << sizeof(bool)   << endl;
+    cout << "char   size: " << sizeof(char)   << endl;
+    cout << "short  size: " << sizeof(short)  << endl;
+    cout << "int    size: " << sizeof(int)    << endl;
+    cout << "long   size: " << sizeof(long)   << endl;
+    cout << "float  size: " << sizeof(float)  << endl;
+    cout << "double size: " << sizeof(double) << endl;
+    cout << "int*   size: " << sizeof(int*)   << endl;
+}
 
 /******************************************************************************
  * run() 함수
