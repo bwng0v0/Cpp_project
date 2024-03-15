@@ -1,5 +1,3 @@
-//https://www.acmicpc.net/problem/10844 쉬운 계단수
-//https://www.acmicpc.net/problem/1914 하노이 탑
 //https://www.acmicpc.net/problem/1343 폴리오미노
 #include <iostream>
 using namespace std;
