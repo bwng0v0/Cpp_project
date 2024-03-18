@@ -15,7 +15,8 @@ void backtracking(int K){
     }
     
     for( int i=1; i<=N; i++ ){
-        if( is_used[i]==0 && arr[K-1]<i ){ //조건추가 전 자리수보다 선택하려는 수가 크다면
+        if( is_used[i]==0 && arr[K-1]<i ){ //조건추가 전 자리수보다 선택하려는 수가 크다면 
+        // 어 근데 원래 윗줄 K=1일때 인덱스 잘못건드리는데 ㅋㅋ
             is_used[i] = 1;
             arr[K] = i;
             backtracking(K+1);
