@@ -1,7 +1,1 @@
-#include <iostream>
-int main(){
-
-std::cout<<"🐬";
-
-    return 0;
-}
+//https://www.acmicpc.net/problem/15664

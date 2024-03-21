@@ -6,42 +6,44 @@ int N,M;
 int arr[10];
 int num[10];
 bool is_used[10];
-int lastout[10];
-bool isoverlap;
 
-//num에 같은수가 있으면 중복
-//입력에서?
+int printed[100000][10];//아니 이거라고?
+int print_cnt;
+int same;
 
 void bt( int K ){
     if( K==M ){
 
-        isoverlap = 1;
-        for(int i=0; i<M; i++){
-            if(lastout[i] != arr[i]){ //?? 중괄호 안쳤다고 이게 
-            isoverlap = 0;
-            break;
+        //출력했는지 검사
+        for( int i=0; i<print_cnt; i++ ){
+            same = 1;
+
+            for( int j=0; j<M; j++ ){ //한줄검사
+                if( arr[j] != printed[i][j] ){
+                    same = 0;
+                    break;
+                }
             }
+
+            if(same == 1)
+            return;
         }
-
-
-        if( isoverlap == 0 ){
-        for(int i=0; i<M; i++)
-        cout<<arr[i]<<' ';
-        cout<<'\n';
-        //출력하고 마지막출력으로 기록
+        //검사후 출력
         for(int i=0; i<M; i++){
-            lastout[i] = arr[i];
+        cout<<arr[i]<<' ';
+        printed[print_cnt][i] = arr[i];
         }
 
-       }
-
+        cout<<'\n';
+        print_cnt += 1;
         return;
     }
 
     for( int i=0; i<N; i++ ){
-        if( is_used[i]==0 ){
+        if( is_used[i]==0 ){ 
             arr[K] = num[i];
             is_used[i] = 1;
+
             bt(K+1);
             is_used[i] = 0;
         }
@@ -62,8 +64,6 @@ for(int i=0; i<N; i++){
         }
     }
 }
-
-
 
 bt(0);
 

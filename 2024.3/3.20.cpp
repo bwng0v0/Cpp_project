@@ -27,6 +27,7 @@ int main(){
 cin>>N>>M;
 for( int i=1; i<=N; i++ ){
     cin>>num[i];
+    
 }
 
 //사전순으로 출력하기위해 정렬
