@@ -78,8 +78,7 @@
         // cout << "Person::Person(\"" << name << "\"):"; println();
     }
 
-    Person::Person(const string name, int id, double weight, bool married, 
-                const char *address) :
+    Person::Person(const string name, int id, double weight, bool married, const char *address) :
             name{name}, id{id}, weight{weight}, married{married} {
         // 위에서 각 멤버를 초기화하는 {}는 각 매개변수 값을 객체의 상응하는 멤버에 설정하는 것이다. 즉,
         // this->id=id, this->weight=weight, this->married=married와 동일하다.
@@ -328,7 +327,7 @@ public:
     Person* at(int index) const { /* TODO 문제 [1] */ return pVector[index]; }
 
     // 할당 받의 pVector의 총 배열 원소의 개수를 반환
-    int     capacity()    const { /* TODO 문제 [1] */ return count; }
+    int     capacity()    const { /* TODO 문제 [1] */ return allocSize; }
 
     // pVector 배열에 현재 삽입된 객체 포인터의 개수를 0으로 설정
     void    clear()             { /* TODO 문제 [1] */count = 0; }
@@ -337,11 +336,16 @@ public:
     bool    empty()       const { /* TODO 문제 [1] */ return count==0; }
 
     // 현재 삽입된 객체 포인터의 개수를 반환
-    int     size()        const { /* TODO 문제 [1] */ return 0; }
+    int     size()        const { /* TODO 문제 [1] */ return count; }
 
     // pVector 배열에 마지막 삽입된 원소 뒤에 새로운 원소 p를 삽입하고 현재 삽입된 객체 개수를 증가
     void    push_back(Person* p); /* TODO 문제 [4, 7] */
 };
+
+void VectorPerson::push_back(Person* p){
+    this->pVector[this->size()] = p; //카운트 넣어도 돌아감
+    count += 1; 
+}
 
 // capacity는 할당해야 할 배열 원소의 개수
 VectorPerson::VectorPerson(int capacity): allocSize{capacity}, count{0}/* : TODO 문제 [2]: 멤버 초기화 */ {
@@ -382,6 +386,12 @@ public:
 PersonManager::PersonManager(Person* array[], int len) {
     cout << "PersonManager::PersonManager(array[], len)" << endl;
     /* TODO 문제 [4] */
+    for( int i=0; i<len; i++ ){
+        Person *s = array[i];
+        Person *tmp = new Person(s->getName(),s->getId(),s->getWeight(),s->getMarried(),s->getAddress());
+        persons.push_back(tmp);
+    }
+
     display();
 }
 
@@ -392,6 +402,11 @@ PersonManager::~PersonManager() {
 
 void PersonManager::deleteElemets() {
     /* TODO 문제 [5] */
+    
+    for(int i=0; i<persons.size(); i++){
+        
+    }
+    persons.clear();
 }
 
 void PersonManager::display() { // Menu item 1
