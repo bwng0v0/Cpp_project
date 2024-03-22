@@ -62,19 +62,20 @@
         bool isSame(const string name, int pid);         // ch3_2에서 추가
     };
 
-    Person::Person(): name{}, id{}, weight{}, married{}, address{} {
+    Person::Person(): Person("") {
         // 위 함수 서두(:와 함수 본체 사이)에서 각 멤버를 초기화하는데 이는 함수 진입하기 전에 
         // 각 멤버의 값을 초기화하는 것이다. {}는 각 데이타 타입별로 디폴트 값으로 초기화하라는 의미임. 
         // 즉, name[]={'\0'}="", id=0, weight=0.0, married=false, address[]={'\0'}=""
-        cout << "Person::Person():"; println();
+
+        //cout << "Person::Person():"; println();
     }
 
-    Person::Person(const string name): name{name}, id{}, weight{}, married{}, address{} /* : TODO [문제 2] */ {
+    Person::Person(const string name): Person("",0,0,0,"") /* : TODO [문제 2] */ {
         // TODO: [문제 2]
 
-        setName(name);
-        setAddress(address);
-        cout << "Person::Person(\"" << name << "\"):"; println();
+        // setName(name);
+        // setAddress(address);
+        // cout << "Person::Person(\"" << name << "\"):"; println();
     }
 
     Person::Person(const string name, int id, double weight, bool married, 
@@ -313,11 +314,11 @@ class VectorPerson
     void extend_capacity(); /* TODO 문제 [7] */
 
 public:
-    VectorPerson() {  /* TODO 문제 [2]: 위임 생성자로 변환 */
-        allocSize = DEFAULT_SIZE;
-        count = 0;
-        cout << "VectorPerson::VectorPerson(" << allocSize << ")" << endl;
-        pVector = new Person*[allocSize]; // 객체 포인터들의 배열을 위한 동적 메모리 할당
+    VectorPerson():VectorPerson(DEFAULT_SIZE) {  /* TODO 문제 [2]: 위임 생성자로 변환 */
+        // allocSize = DEFAULT_SIZE;
+        // count = 0;
+        // cout << "VectorPerson::VectorPerson(" << allocSize << ")" << endl;
+        // pVector = new Person*[allocSize]; // 객체 포인터들의 배열을 위한 동적 메모리 할당
     }
     VectorPerson(int capacity);
     ~VectorPerson();
@@ -333,7 +334,7 @@ public:
     void    clear()             { /* TODO 문제 [1] */count = 0; }
 
     // 현재 삽입된 객체 포인터가 하나도 없으면 true, 있으면 false
-    bool    empty()       const { /* TODO 문제 [1] */ return true; }
+    bool    empty()       const { /* TODO 문제 [1] */ return count==0; }
 
     // 현재 삽입된 객체 포인터의 개수를 반환
     int     size()        const { /* TODO 문제 [1] */ return 0; }
@@ -343,16 +344,17 @@ public:
 };
 
 // capacity는 할당해야 할 배열 원소의 개수
-VectorPerson::VectorPerson(int capacity) /* : TODO 문제 [2]: 멤버 초기화 */ {
+VectorPerson::VectorPerson(int capacity): allocSize{capacity}, count{0}/* : TODO 문제 [2]: 멤버 초기화 */ {
     // allocSize = capacity, count = 0; 초기화를 위 함수 서두(위 /* */ 주석 사이)에서 할 것
     // 함수 서두에서 초기화하는 방법은 Person 클래스 참고할 것
     cout << "VectorPerson::VectorPerson(" << allocSize << ")" << endl;
     pVector = new Person*[allocSize]; // Person* 들의 배열을 위한 동적 메모리 할당
 }
 
-VectorPerson::~VectorPerson() {
+VectorPerson::~VectorPerson()  {
     /* TODO 문제 [2]: 동적으로 할당된 배열 pVector 반납: pVector가 배열임을 명심하라. */
-    // cout << "VectorPerson::~VectorPerson(): pVector deleted" << endl;
+    delete[] pVector;
+    cout << "VectorPerson::~VectorPerson(): pVector deleted" << endl;
 }
 
 /******************************************************************************
