@@ -31,6 +31,7 @@
         double weight;          // 체중
         bool   married;         // 결혼여부
         char   address[40];     // 주소
+        string passwd;          // 비번
 
     protected:
         void inputMembers(istream* in);
@@ -44,12 +45,14 @@
 
         void set(const string pname, int pid, double pweight, bool pmarried, const char *paddress);
         void setName(const string pname)      { name = pname; }
+        void setPasswd(const string passwd)   { this->passwd = passwd; }
         void setId(int pid)                   { id = pid; }
         void setWeight(double pweight)        { weight = pweight; }
         void setMarried(bool pmarried)        { married = pmarried; }
         void setAddress(const char* paddress) { strcpy(address, paddress); }
 
         const string getName()    { return name; }
+        string      getPasswd()  { return passwd; }
         int         getId()      { return id; }
         double      getWeight()  { /* TODO: [문제 2] */ return weight; }  // 구현 시
         bool        getMarried() { /* TODO: [문제 2] */ return married; }  // 리턴 값들을
@@ -167,6 +170,25 @@
         return true;
     }
 
+
+    // 입력장치에서 하나의 단어로 구성된 문자열을 입력 받음
+string getNext(const string msg) {
+    cout << msg; // 입력용 메시지를 출력
+    cin >> line; // 하나의 단어를 읽어 들임
+    if (echo_input) cout << line << endl; // 자동체크 시 출력됨
+    getline(cin, emptyLine); // 입력받은 한 단어 외 그 행의 나머지 데이타(엔터포함)는 읽어서 버림
+    return line;             // 이유는 여기서 [엔터]를 제거하지 않으면 
+}                            // 다음의 getNextLine()에서 엔터만 읽어 들일 수 있기 때문에
+
+// 입력장치에서 한 행을 입력 받음
+string getNextLine(const string msg) {
+    cout << msg; // 입력용 메시지를 출력
+    getline(cin, line); // 한 행을 읽어 들임
+    if (echo_input) cout << line << endl; // 자동체크 시 출력됨
+    return line;
+}
+
+
     // 하나의 정수를 입력 받음; 정수가 아닌 아닌 문자열 입력시 에러 메시지 출력 후 재입력 받음
     int getInt(const string msg) {
         for (int value; true; ) {
@@ -225,6 +247,7 @@
         void whatAreYouDoing();
         void isSame();
         void inputPerson();
+        void changePasswd();
         void run();
     };
 
@@ -273,19 +296,27 @@
             display();              // user 1 71.1 true :Gwangju Nam-ro 21:
     }
 
+    void CurrentUser::changePasswd() {
+    string pswd = UI::getNext("New password: ");
+    // pUser가 포인트하는 객체의 비번을 변경하라
+    pUser->setPasswd(pswd);
+    cout << "Password changed" << endl;
+    }
+
     void CurrentUser::run() {
+        using CU = CurrentUser;
         using func_t = void (CurrentUser::*)();
         func_t func_arr[] = {
-            nullptr, &CurrentUser::display, &CurrentUser::getter, &CurrentUser::setter,
-            &CurrentUser::set, &CurrentUser::whatAreYouDoing,
-            &CurrentUser::isSame, &CurrentUser::inputPerson,
+            nullptr, &CU::display, &CU::getter, &CU::setter,
+            &CU::set, &CU::whatAreYouDoing,
+            &CU::isSame, &CU::inputPerson, &CU::changePasswd
         };
         int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 배열의 길이
         string menuStr =
-            "+++++++++++++++++++++ Current User Menu ++++++++++++++++++++++++\n"
-            "+ 0.Logout 1.Display 2.Getter 3.Setter 4.Set 5.WhatAreYouDoing +\n"
-            "+ 6.IsSame 7.InputPerson                                       +\n"
-            "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+        "+++++++++++++++++++++ Current User Menu ++++++++++++++++++++++++\n"
+        "+ 0.Logout 1.Display 2.Getter 3.Setter 4.Set 5.WhatAreYouDoing +\n"
+        "+ 6.IsSame 7.InputPerson 8.ChangePasswd(4_2)                   +\n"
+        "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
         while (true) {
             int menuItem = UI::selectMenu(menuStr, menuCount);
@@ -343,9 +374,35 @@ public:
 };
 
 void VectorPerson::push_back(Person* p){
-    this->pVector[this->size()] = p; //카운트 넣어도 돌아감
+    if( count == allocSize )
+    extend_capacity();
+
+    pVector[this->size()] = p; //카운트 넣어도 돌아감
     count += 1; 
 }
+
+// pVector[]의 배열 크기를 두배로 확장한다.
+void VectorPerson::extend_capacity() {
+    Person **saved_persons = pVector; // 기존의 pVector를 백업함
+
+    // allocSize 값을 두 배로 늘린 후 새로 pVector를 할당 받는다.
+    allocSize *= 2;
+    pVector = new Person*[allocSize];// 변수가 선언이 되어있으면 선언할때처럼 자료형명시 안해도되네
+    
+    // for 문을 이용하여 count 개수만큼만 
+    // saved_persons[i]에 저장된 포인터를 새로 할당 받은 pVector[i]에 저장한다.
+    for( int i=0; i<count; i++ ){
+        pVector[i] = saved_persons[i];
+    }
+    
+
+    // saved_persons [배열] 메모리를 반납한다. (배열임을 명심할 것)
+    delete[] saved_persons;
+
+
+    cout << "VectorPerson: capacity extended to " << allocSize << endl;
+}
+
 
 // capacity는 할당해야 할 배열 원소의 개수
 VectorPerson::VectorPerson(int capacity): allocSize{capacity}, count{0}/* : TODO 문제 [2]: 멤버 초기화 */ {
@@ -361,6 +418,33 @@ VectorPerson::~VectorPerson()  {
     cout << "VectorPerson::~VectorPerson(): pVector deleted" << endl;
 }
 
+
+
+/******************************************************************************
+ * ch4_2: Factory class
+ ******************************************************************************/
+
+class Factory
+{
+public:
+    // 동적으로 Person 객체를 할당 받은 후 키보드로부터 새로 추가하고자 하는 사람의
+    // 인적정보를 읽어 들여 해당 객체에 저장한 후 그 객체의 포인터를 반환한다.
+    Person* inputPerson(istream* in) {
+        Person* p = new Person();
+
+        p->input(in);  // 멤버들을 입력 받음
+        if (UI::checkDataFormatError(in)) { // 정수입력할 곳에 일반 문자 입력한 경우
+            delete p;         // 할당한 메모리 반납
+            return nullptr;   // nullptr 반환은 에러가 발생했다는 의미임
+        }
+        if (UI::echo_input) p->println(); // 자동체크에서 사용됨
+        return p;
+    }
+};
+
+
+
+
 /******************************************************************************
  * ch4_2: PersonManager class
  ******************************************************************************/
@@ -368,6 +452,7 @@ VectorPerson::~VectorPerson()  {
 class PersonManager
 {
     VectorPerson persons;
+    Factory factory;
 
     void deleteElemets();
     void printNotice(const string preMessage, const string postMessage);
@@ -404,7 +489,8 @@ void PersonManager::deleteElemets() {
     /* TODO 문제 [5] */
     
     for(int i=0; i<persons.size(); i++){
-        
+        Person *target =  persons.at(i);
+        delete target;
     }
     persons.clear();
 }
@@ -420,14 +506,70 @@ void PersonManager::display() { // Menu item 1
          << ", capacity():" << persons.capacity() << endl;
 }
 
-void PersonManager::append() { /* TODO 문제 [6] */ } // Menu item 2
+void PersonManager::printNotice(const string preMessage, const string postMessage) {
+    cout << preMessage;
+    cout << " [person information] ";
+    cout << postMessage << endl;
+}
+
+// 아래 함수는 사용자로부터 새로 추가할 Person 객체의 수를 입력 받고 for문을 이용하여 
+// 그 개수만큼의 Person 객체를 생성하고 인적정보를 입력받은 후 (factory.inputPerson(&cin)을 통해)
+// 그 객체 포인터를 VectorPerson persons의 맨 끝 원소로 추가한다.
+ 
+/* append() 실행 시 아래 항목들을 복사해서 순서적으로 입력하면 편하게 인적정보를 입력할 수 있음
+3
+HongGilDong 0 71.5 false :Gwangju Nam-gu Bongseon-dong 21:
+LeeMongRyong 1 65 true :Jong-ro 1-gil, Jongno-gu, Seoul:
+LeeSoonShin 2 80 true :1001, Jungang-daero, Yeonje-gu, Busan:
+*/
+void PersonManager::append() { // Menu item 2
+    int count = UI::getPositiveInt("The number of persons to append? ");
+    // to_string(10) 함수: 정수 10을 문자열 "10"으로 변환
+    // stoi("10") 함수: 문자열 "10"을 정수 10으로 변환
+    printNotice("Input "+to_string(count), ":");
+    for (int i = 0; i < count; ++i) {
+        Person* p = factory.inputPerson(&cin); // 한 사람 정보 입력 받음
+        if (p) persons.push_back(p); // if (p != nullptr) 와 동일; 
+        // 만약 p가 nullptr이면 이는 입력 시 에러가 발생한 것임 
+        // (즉, 정수를 입력해야 하는 곳에 일반 문자를 입력한 경우)
+    }
+    display();
+}
 
 void PersonManager::clear() { // Menu item 3
     deleteElemets();
     display();
 }
-void PersonManager::login() { // Menu item 4 
-    /* TODO 문제 [8] */ 
+// VectorPerson에 저장된 사람들 중 매개변수 name과 동일한 이름을 가진 사람을 찾는다. 
+Person* PersonManager::findByName(const string name) {
+    // for 문을 이용하여 persons에 저장된 각각(i)의 사람 객체에 대해
+    //     매개변수 name과 비교해서 동일한 이름을 가진 객체이면 해당 객체의 포인터(Person*)를 반환한다.
+    //     persons의 size(), at(i), at(i)->getName() 등의 멤버함수 활용하라.
+    
+
+    for( int i=0; i<persons.size(); i++ ){
+        if( (persons.at(i))->getName() == name )
+        return persons.at(i);
+    }
+
+    // 찾지 못한 경우   
+    cout << name + ": NOT found" << endl;
+    return nullptr;
+}
+
+// 사용자로부터 로그인할 사람의 이름과 비번을 입력받고 동일한 이름을 가진 Person 객체를
+// persons에서 찾고 비번이 일치하는지 체크한 후 CurrentUser(p).run() 실행한다.
+// 기존(ch4-1)의 Main Menu에서 호출하던 CurrentUser를 메뉴항목에서 삭제한 후
+// 대신 여기서 호출함(사용자가 선택한 인적정보 p를 인자로 넘겨 주면서)
+void PersonManager::login() {
+    string name = UI::getNext("user name: ");
+    Person* p = findByName(name); // 해당 사람을 VectorPerson에서 찾는다.
+    if (p == nullptr) return;     // 해당 사람 존재하지 않음
+    string passwd = UI::getNextLine("password: ");
+    if (passwd != p->getPasswd()) // 비번 불일치
+        cout << "WRONG password!!" << endl;
+    else
+        CurrentUser(p).run();
 }
 
 void PersonManager::run() {
@@ -448,6 +590,14 @@ void PersonManager::run() {
         (this->*func_arr[menuItem])();
     }
 }
+
+
+
+
+
+
+
+
 
     /******************************************************************************
  * ch3_2, 4_1, 4_2: MultiManager class
