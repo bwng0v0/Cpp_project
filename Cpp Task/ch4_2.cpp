@@ -73,7 +73,7 @@
         //cout << "Person::Person():"; println();
     }
 
-    Person::Person(const string name): Person("",0,0,0,"") /* : TODO [문제 2] */ {
+    Person::Person(const string name): Person(name,0,0,0,"") /* : TODO [문제 2] */ { //여기 비우라고했었는데?
         // TODO: [문제 2]
 
         // setName(name);

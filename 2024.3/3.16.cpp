@@ -1,3 +1,4 @@
+//https://www.acmicpc.net/problem/15649 N과 M (1)
 #include <iostream>
 using namespace std;
 
@@ -11,7 +12,7 @@ void backtracking(int K){
             cout<<arr[i]<<' ';
         }
         cout<<'\n';
-        return;// !!!!!!! 반환 되고나서 첫번째 자릿수부터 다시 시작하는게 아니라 for문 사이클이 넘어감
+        return;// !반환 되고나서 첫번째 자릿수부터 다시 시작하는게 아니라 for문 사이클이 넘어감
     }
 
     for( int i=1; i<=N; i++ ){// 1부터N까지 안쓴 수를 구별해서 채워넣음

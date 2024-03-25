@@ -1,4 +1,4 @@
-//https://www.acmicpc.net/problem/12018
+//https://www.acmicpc.net/problem/12018 Yonsei TOTO
 #include <iostream>
 #include <algorithm>
 using namespace std;
