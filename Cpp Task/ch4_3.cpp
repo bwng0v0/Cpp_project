@@ -5,11 +5,10 @@
     *      Author: your name
     *
     *
-    *  + UI::getNext(), UI::getNextLine() 추가
-    *  + Person::passwd, getPasswd(), setPasswd() 추가
-    *  + VectorPerson 클래스 추가: 객체 포인터 배열의 생성 및 소멸
-    *  + PersonManager 클래스 추가: 객체 배열의 복사, 객체의 동적 생성 및 소멸
-    *  + MultiManager 클래스: 객체 배열로 변경
+    *  + class Memo 추가: string 클래스의 멤버함수 및 operator 활용법
+    *  + Person::memo_c_str[] 멤버 및 set, get 함수 추가
+    *  + CurrentUser::memo 멤버, 함수 및 메뉴 항목 추가
+    *  + PersonManager::~PersonManager()에서 display() 문장 삭제
     */
     #include <iostream>
     #include <cstring>
@@ -229,6 +228,92 @@ string getNextLine(const string msg) {
 
     } // namespace UI
 
+
+/******************************************************************************
+ * ch4_3: string and Memo class
+ ******************************************************************************/
+
+class Memo
+{
+    string mStr; // 메모를 저장해 두는 문자열
+
+    string get_next_line(size_t* ppos);
+    bool find_line(int line, size_t* start, size_t* next);
+    size_t find_last_line();
+
+public:
+    string getNext(size_t* ppos);
+    void displayMemo();
+    const char *get_c_str();
+    void set_c_str(const char *c_str);
+    void findString();
+    void compareWord();
+    void dispByLine();
+    void deleteLine();
+    void replaceLine();
+    void scrollUp();
+    void scrollDown();
+    void inputMemo();
+    void run();
+};
+
+void Memo::displayMemo() { // Menu item 1
+    cout << "------- Memo -------" << endl;
+    cout << mStr;
+    if (mStr.length() > 0 && mStr[mStr.length()-1] != '\n')
+        cout << endl; // 메모 끝에 줄바꾸기 문자가 없을 경우 출력
+    cout << "--------------------" << endl;
+}
+
+// 아래 R"( 와 )"는 그 사이에 있는 모든 문자를 하나의 문자열로 취급하라는 의미이다.
+// 따라서 행과 행 사이에 있는 줄바꾸기 \n 문자도 문자열에 그대로 포함된다.
+// 이런 방식을 사용하지 않으면 여러 행에 걸친 문자열을 만들려면 복잡해진다.
+const char* memoData = R"(The Last of the Mohicans
+James Fenimore Cooper
+Author's Introduction
+It is believed that the scene of this tale, and most of the information
+necessary to understand its allusions, are rendered sufficiently 
+obvious to the reader in the text itself, or in the accompanying notes.
+Still there is so much obscurity in the Indian traditions, and so much
+confusion in the Indian names, as to render some explanation useful.
+Few men exhibit greater diversity, or, if we may so express it, 
+greater antithesis of character, 
+than the native warrior of North America.
+)";
+
+void Memo::run() {
+    using func_t = void (Memo::*)();
+    // TODO 문제 [1]: func_arr[], menuCount 선언
+    
+
+    func_t func_arr[] = {
+            nullptr, &Memo::displayMemo
+            // ,&Memo::findString, &Memo::compareWord, &Memo::dispByLine,
+            // &Memo::deleteLine, &Memo::replaceLine, &Memo::scrollUp, &Memo::scrollDown, &Memo::inputMemo
+        };
+    
+    int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 배열의 길이
+
+
+    string menuStr =
+        "++++++++++++++++++++++ Memo Management Menu +++++++++++++++++++++\n"
+        "+ 0.Exit 1.DisplayMemo 2.FindString 3.CompareWord 4.DispByLine  +\n"
+        "+ 5.DeleteLine 6.RepaceLine 7.ScrollUp 8.ScrollDown 9.InputMemo +\n"
+        "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+
+    if (mStr == "") mStr = memoData;// 멤버 mStr이 비었을 경우 위 memoData로 초기화한다.
+
+    // TODO 문제 [1]: while 문장 삽입하여 선택된 메뉴항목 실행하는 함수 호출
+    while (true) {
+            int menuItem = UI::selectMenu(menuStr, menuCount);
+            if (menuItem == 0) return;
+            (this->*func_arr[menuItem])();
+        }
+
+}
+
+
+
     /******************************************************************************
      * ch3_2: CurrentUser class
      ******************************************************************************/
@@ -236,7 +321,7 @@ string getNextLine(const string msg) {
     class CurrentUser
     {
         Person* pUser;
-
+        Memo    memo; // ch4_3에서 추가
     public:
     //  CurrentUser(Person u): user(u) { }
         CurrentUser(Person* pUser): pUser(pUser)/* TODO [문제 1]:  멤버 초기화 */ { }
@@ -248,6 +333,7 @@ string getNextLine(const string msg) {
         void isSame();
         void inputPerson();
         void changePasswd();
+        void manageMemo();
         void run();
     };
 
@@ -303,19 +389,23 @@ string getNextLine(const string msg) {
     cout << "Password changed" << endl;
     }
 
+    void CurrentUser::manageMemo() { // Menu item 9
+    memo.run();
+    }
+
     void CurrentUser::run() {
         using CU = CurrentUser;
         using func_t = void (CurrentUser::*)();
         func_t func_arr[] = {
             nullptr, &CU::display, &CU::getter, &CU::setter,
             &CU::set, &CU::whatAreYouDoing,
-            &CU::isSame, &CU::inputPerson, &CU::changePasswd
+            &CU::isSame, &CU::inputPerson, &CU::changePasswd, &CU::manageMemo
         };
         int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 배열의 길이
         string menuStr =
         "+++++++++++++++++++++ Current User Menu ++++++++++++++++++++++++\n"
         "+ 0.Logout 1.Display 2.Getter 3.Setter 4.Set 5.WhatAreYouDoing +\n"
-        "+ 6.IsSame 7.InputPerson 8.ChangePasswd(4_2)                   +\n"
+        "+ 6.IsSame 7.InputPerson 8.ChangePasswd(4_2) 9.ManageMemo(4_3) +\n"
         "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
         while (true) {
@@ -482,7 +572,6 @@ PersonManager::PersonManager(Person* array[], int len) {
 
 PersonManager::~PersonManager() {
     deleteElemets();
-    display();
 }
 
 void PersonManager::deleteElemets() {
