@@ -265,6 +265,27 @@ void Memo::displayMemo() { // Menu item 1
     cout << "--------------------" << endl;
 }
 
+void Memo::findString() {
+    string word = UI::getNext("Word to find? ");
+    int count = 0, len = word.length();
+    /*
+    TODO: for 문을 사용하여 반복적으로 string::find() 함수를 호출하여 찾은 단어의 
+          출현 회수(count)를 세어라. find()를 통해 찾은 위치에서 len을 더하면 
+          찾은 단어의 끝 위치가 되는데 이것이 다음 번에 찾기 시작할 위치이다.
+          string::find()의 리턴 값이 string::npos와 같으면 
+          단어를 찾지 못했다는 것을 의미한다. 못 찾을 때까지 반복 수행하면 됨.
+          찾기 시작 위치 또는 리턴 값의 타입은 size_t를 사용하라.
+    */
+   int f_index = 0;
+   for(;;){
+    if( mStr.find(word,f_index) == mStr.npos ) break;
+    f_index = mStr.find(word,f_index) + len;
+    count += 1;
+   }
+
+    cout << "Found count: " << count << endl;
+}
+
 // 아래 R"( 와 )"는 그 사이에 있는 모든 문자를 하나의 문자열로 취급하라는 의미이다.
 // 따라서 행과 행 사이에 있는 줄바꾸기 \n 문자도 문자열에 그대로 포함된다.
 // 이런 방식을 사용하지 않으면 여러 행에 걸친 문자열을 만들려면 복잡해진다.
@@ -288,7 +309,7 @@ void Memo::run() {
 
     func_t func_arr[] = {
             nullptr, &Memo::displayMemo
-            // ,&Memo::findString, &Memo::compareWord, &Memo::dispByLine,
+            ,&Memo::findString//, &Memo::compareWord, &Memo::dispByLine,
             // &Memo::deleteLine, &Memo::replaceLine, &Memo::scrollUp, &Memo::scrollDown, &Memo::inputMemo
         };
     
@@ -854,13 +875,9 @@ public:
      ******************************************************************************/
 
     void run() {
-        MainMenu().run();
-        // MainMenu 타입의 이름 없는 임시객체를 생성한 후 
-        // 그 객체의 run() 멤버함수를 호출함; run()에서 리턴한 후에는 임시객체가 자동 소멸됨
-        // 즉, 위 문장은 아래 두 문장과 동일한 기능임
-        // MainMenu mm;
-        // mm.run();
-    }
+    //MainMenu().run(); 현재 편의를 위해 잠시 수정상태
+    Memo().run();
+}
 
     /******************************************************************************
      * Program Test: Automatic Error Check

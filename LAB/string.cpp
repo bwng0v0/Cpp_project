@@ -1,11 +1,9 @@
 #include <iostream>
-#include <string>
+//#include <string>
+using namespace std;
 int main(){
 
-std::string str;
-std::getline(std::cin, str);
 
-std::cout<<str;
 
     return 0;
 }
