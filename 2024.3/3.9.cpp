@@ -1,6 +1,5 @@
+//https://www.acmicpc.net/problem/17478 재귀함수가 뭔가요?
 #include <iostream>
-//https://www.acmicpc.net/problem/17478
-
 void f( int N, int K){
 using namespace std;
 

@@ -1,5 +1,6 @@
+//https://www.acmicpc.net/problem/1453 피시방 알바
 #include <iostream>
-//https://www.acmicpc.net/problem/1453
+
 int main(){
 using namespace std;
 

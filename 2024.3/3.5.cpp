@@ -1,5 +1,5 @@
+//https://www.acmicpc.net/problem/10992 별 찍기 - 17
 #include <iostream>
-//https://www.acmicpc.net/problem/10992
 int main(){
     int n;
     std::cin>>n;

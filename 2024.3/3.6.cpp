@@ -1,5 +1,5 @@
+//https://www.acmicpc.net/problem/2460 지능형 기차 2
 #include <iostream>
-//https://www.acmicpc.net/problem/2460
 int main(){
 
 	int in,out,train = 0,max = 0;

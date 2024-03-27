@@ -1,5 +1,5 @@
+//https://www.acmicpc.net/problem/1673 치킨 쿠폰
 #include <iostream>
-//https://www.acmicpc.net/problem/1673
 int main(){
     using namespace std;
 
