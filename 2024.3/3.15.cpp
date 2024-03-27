@@ -1,4 +1,4 @@
-//https://www.acmicpc.net/problem/14659
+//https://www.acmicpc.net/problem/14659 한조서열정리하고옴ㅋㅋ
 #include <iostream>
 using namespace std;
 int main(){
