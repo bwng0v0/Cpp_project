@@ -1,4 +1,4 @@
-//https://www.acmicpc.net/problem/15665
+//https://www.acmicpc.net/problem/15665 N과 M (11)
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -8,7 +8,7 @@ int N,M;
 vector<int> num;
 int len;
 int arr[10];
-int printed[7000][10];
+int printed[1000000][10];
 int print_cnt;
 int same;
 
@@ -25,8 +25,9 @@ void bt(int K){
                 }
             }
             
-            if(same==1)
+            if(same==1){
             return;
+            }
         }
 
         for( int i=0; i<M; i++ ){
@@ -39,10 +40,8 @@ void bt(int K){
     }
 
     for( int i=0; i<len; i++ ){
-        if( arr[K-1] <= num[i] ){
-            arr[K] = num[i];
-            bt(K+1);
-        }
+        arr[K] = num[i];
+        bt(K+1);
     }
 }
 int main(){

@@ -40,7 +40,7 @@ void bt( int K ){
     }
 
     for( int i=0; i<N; i++ ){
-        if( is_used[i]==0 ){ 
+        if( is_used[i]==0 ){
             arr[K] = num[i];
             is_used[i] = 1;
 
