@@ -286,6 +286,145 @@ void Memo::findString() {
     cout << "Found count: " << count << endl;
 }
 
+// 메모의 현 위치(pos = *ppos)에서 하나의 단어를 찾아 해당 단어를 별도의 string으로 구성해서 리턴함
+// 스페이스, 탭, 엔터와 같은 공백 문자로 시작할 경우 이들을 먼저 모두 스킵함
+// 단어의 끝은 공백, 탭, 엔터, 구두점(punctuation)으로 구분함
+// 구두점이란 숫자, 영문자를 제외한 문자들을 의미한다. ,.';:"][{}()*&^%$#@!~`?>< 등
+// 각 구두점 글자는 단어를 구분하는 구분자로 사용되고 그 글자 하나만으로도 하나의 단어로 취급받음
+// isspace()와 ispunct() 함수는 www.cplusplus.com/reference/에서 검색해 보기 바란다.
+
+string Memo::getNext(size_t* ppos) {
+    size_t pos = *ppos, end;
+    for ( ; pos < mStr.size() && isspace(mStr[pos]); ++pos) ; // 단어 앞의 공백 문자들 스킵(있을 경우)
+    end = pos; // pos는 단어의 시작 위치이고 end는 단어의 끝 다음 위치이다.
+    if (end < mStr.size() && ispunct(mStr[end])) // 첫 글자가 구두점일 경우
+        ++end;
+    else { // 단어의 끝을 찾음
+        for ( ; end < mStr.size() && !isspace(mStr[end]) &&
+                !ispunct(mStr[end]); ++end) ;
+    }
+    *ppos = end; // 다음 단어의 시작 위치를 기록해 둠
+    /*
+    TODO: string::substr()을 이용해서 찾은 단어를 발췌해서 별도의 string으로 구성하여 리턴하라.
+          mStr의 끝에 도착하여 더 이상 찾을 단어가 없을 경우 "" 문자열을 반환하게 된다.
+          발췌할 단어의 길이는 pos와 end의 간단한 계산으로 구할 수 있다. 
+    */
+   string tmp = mStr.substr(pos,end-pos);
+   return tmp;
+}
+
+// 사용자로부터 비교할 단어를 입력받고 메모 문자열에서 
+// 해당 단어와 동일한 단어의 출현 회수 same,
+// 사전적 순서에서 이 단어보다 앞쪽에 있는 단어의 출현 회수 less, 
+// 그리고 이 단어보다 뒤쪽에 있는 단어의 출현 회수 larger를 세어서 각각을 출력한다.
+void Memo::compareWord() {
+    string next, word = UI::getNext("Word to compare? ");
+    int less = 0, same = 0, larger = 0;
+    /*
+    아래 pos는 getNext(&pos)를 호출할 때 다음 단어를 찾아야 할 시작 위치임
+    TODO: for(size_t pos = 0; getNext(&pos)를 호출하여 mStr의 끝까지 반복 수행; )
+             위 getNext(&pos)를 호출시 리턴된 다음 단어를 next에 저장한 후
+             next가 ""일 경우 mStr의 끝을 의미하므로 for문 종료
+             ""가 아닌 경우 찾을 단어인 word와 비교(<, >, ==)하여 
+             적절한 less, same, larger 변수의 값을 증가시킨다.
+    */
+   for(size_t pos = 0; pos<mStr.size(); ){ //이럴거면 while이 낫지않나
+    next = getNext(&pos);
+    if( next == "" )
+    break;
+
+    if( next == word )
+    same += 1;
+    else if( next>word )
+    larger += 1;
+    else if ( next<word )
+    less += 1;
+   }
+
+    cout << "less: "   << less   << endl;
+    cout << "same: "   << same   << endl;
+    cout << "larger: " << larger << endl;
+}
+
+// 메모의 현 위치(pos = *ppos)에서 그 행의 끝을 찾은 후 행 전체를 별도의 string으로 구성해서 리턴함
+// string::npos는 해당 문자를 찾지 못했을 경우의 리턴 값이며 (-1)과 동일 값임
+string Memo::get_next_line(size_t* ppos) {
+    size_t pos = *ppos, end;
+
+    /*
+    TODO: string::find()를 이용해 행의 끝('\n') 위치를 찾아서(현재 행의 시작 위치는 pos임) end에 저장
+    */
+   end = mStr.find("\n",pos);
+    // 메모의 끝에 '\n'이 없을 경우: (end == string::npos) 
+    end = (end == string::npos)? mStr.length() : end+1; 
+    *ppos = end; // 다음 행의 시작 위치를 기록해 둠
+
+    /*
+    TODO: 찾은 현재 행을 string::substr()으로 발췌해서 별도의 string으로 구성하여 리턴하라.
+          발췌할 단어 길이는 pos와 end로 간단히 계산할 수 있음
+    */
+   return mStr.substr(pos,end-pos);
+}
+
+// 메모 텍스트 mStr를 한 행씩 잘라서 행 번호와 함께 화면에 보여즘; 행 번호는 0부터 시작함
+void Memo::dispByLine() {
+    cout << "--- Memo by line ---" << endl;
+    /*
+    아래 pos는 get_next_line(&pos)를 호출할 때 다음 행의 시작 위치임
+    TODO: for(size_t pos = 0, ... 문을 이용하여 pos가 mStr의 길이보다 작을 동안 반복 수행
+             get_next_line(&pos)를 호출하여 반환된 다음 행 문자열을 line에 저장하고 
+             적절한 행 번호와 함께 해당 행(line)을 출력(행번호 출력은 PersonManager::display() 참조)
+             행의 끝에 줄바꾸기 문자 '\n'가 없을 경우 endl 출력 (displayMemo() 참조)
+    */
+   int i=0;
+   for(size_t pos = 0; pos<mStr.size(); ){//pos증감은 get_next_line(&pos)에서 해줌
+   string tmp = get_next_line(&pos);
+   cout<<"["<<i<<"] "<<tmp;
+   if (tmp.size() > 0 && tmp[tmp.size()-1] != '\n')
+        cout << "\n"; // 메모 끝에 줄바꾸기 문자가 없을 경우 출력
+   i += 1;
+   }
+    cout << "--------------------" << endl;
+}
+
+// 행번호가 line_num(0부터 시작)인 행을 찾아 행의 시작 위치 *start와 행 길이 *plen를 계산함
+// 해당 행 번호를 찾았으면 true, 찾지 못했으면 false 반환
+bool Memo::find_line(int line_num, size_t* pstart, size_t* plen) {
+    size_t start = 0;
+
+    // TODO: for 문을 이용해 line_num번 반복 수행 (0 행에서 line_num-1 행까지 반복)
+    //           string::find()를 이용해 start에서부터 행의 끝('\n')을 찾고, 
+    //           find()의 리턴된 값을 다시 start에 저장
+    //           행의 끝을 찾지 못했을 경우(line_num 행까지 진행하지 못한 경우) 즉,
+    //           find()의 반환된 값 start가 string::npos이면 
+    //               여기서 false 리턴함 (line_num행을 찾지 못한 경우)
+    //           start 값을 1 증가시켜 다음 행의 시작 위치로 조정
+              
+    *pstart = start; // line_num 행의 시작 위치를 기록
+
+    // TODO: line_num 행의 끝 위치를 찾고, 
+    //       찾았으면 그 행의 길이를 계산하여 *plen에 저장
+    //       찾지 못한 경우 string::npos를 *plen에 저장 /* 예를들어, 실제로 행이 
+    //           [0], [1], [2] 행까지 있는데 [3] 행의 시작(메모의 끝 위치)을 찾을 경우에 해당함 */
+
+    return true; // line_num 행을 찾았다는 것을 의미함
+}
+
+// 사용자로부터 삭제할 행 번호를 입력 받은 후 해당 행 전체를 삭제함
+void Memo::deleteLine() {
+    size_t start, len, line_num = UI::getPositiveInt("Line number to delete? ");
+
+    // TODO: 만약 line_num 행을 찾지 못한 경우 
+    //       ( 즉, mStr이 비어 있거나 또는
+    //         find_line(line_num,&start,&len) 호출하여 line_num 행을 못 찾았거나(false) 또는
+    //         찾았지만(true) 행의 시작 위치인 start가 메모 텍스트의 끝인 경우(start == mStr.size()) )  
+    //           "Out of line range" 문장 출력
+    //       line_num 행을 찾은 경우 mStr에서 해당 행을 삭제한 후 dispByLine() 호출
+    
+}
+
+
+
 // 아래 R"( 와 )"는 그 사이에 있는 모든 문자를 하나의 문자열로 취급하라는 의미이다.
 // 따라서 행과 행 사이에 있는 줄바꾸기 \n 문자도 문자열에 그대로 포함된다.
 // 이런 방식을 사용하지 않으면 여러 행에 걸친 문자열을 만들려면 복잡해진다.
@@ -309,8 +448,8 @@ void Memo::run() {
 
     func_t func_arr[] = {
             nullptr, &Memo::displayMemo
-            ,&Memo::findString//, &Memo::compareWord, &Memo::dispByLine,
-            // &Memo::deleteLine, &Memo::replaceLine, &Memo::scrollUp, &Memo::scrollDown, &Memo::inputMemo
+            ,&Memo::findString, &Memo::compareWord, &Memo::dispByLine,
+             &Memo::deleteLine//, &Memo::replaceLine, &Memo::scrollUp, &Memo::scrollDown, &Memo::inputMemo
         };
     
     int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 배열의 길이
