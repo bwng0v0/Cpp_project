@@ -30,6 +30,7 @@
         double weight;          // 체중
         bool   married;         // 결혼여부
         char   address[40];     // 주소
+        char   memo_c_str[1024]; // 메모장
         string passwd;          // 비번
 
     protected:
@@ -62,6 +63,8 @@
         void println()            { print(&cout); cout << endl; }
         void whatAreYouDoing();                          // ch3_2에서 추가
         bool isSame(const string name, int pid);         // ch3_2에서 추가
+        void setMemo(const char* c_str)      { strcpy(memo_c_str,c_str); }
+        const char* getMemo()    { return memo_c_str; }
     };
 
     Person::Person(): Person("") {
@@ -81,7 +84,7 @@
     }
 
     Person::Person(const string name, int id, double weight, bool married, const char *address) :
-            name{name}, id{id}, weight{weight}, married{married} {
+            name{name}, id{id}, weight{weight}, married{married}, memo_c_str{} {
         // 위에서 각 멤버를 초기화하는 {}는 각 매개변수 값을 객체의 상응하는 멤버에 설정하는 것이다. 즉,
         // this->id=id, this->weight=weight, this->married=married와 동일하다.
         // 여기서 this는 해당 객체를 포인터하는 포인터 변수이며, (다음 장에서 설명될 예정임)
@@ -244,8 +247,6 @@ class Memo
 public:
     string getNext(size_t* ppos);
     void displayMemo();
-    const char *get_c_str();
-    void set_c_str(const char *c_str);
     void findString();
     void compareWord();
     void dispByLine();
@@ -255,6 +256,12 @@ public:
     void scrollDown();
     void inputMemo();
     void run();
+    //TODO: mStr의 C 스트링 문자열(string의 적절한 멤버 함수 호출할 것)을 리턴하라.
+    const char *get_c_str() { return mStr.c_str(); }
+
+    //TODO: C 스트링 문자열 c_str을 Memo 클래스의 mStr에 대입(=)하여 저장하라.
+    void set_c_str(const char *c_str) { mStr = c_str; }
+    // = 연산자의 좌우 데이타 타입이 달라도 C 스트링 문자열인 c_str이 string mStr 내부로 복사된다.
 };
 
 void Memo::displayMemo() { // Menu item 1
@@ -399,6 +406,12 @@ bool Memo::find_line(int line_num, size_t* pstart, size_t* plen) {
     //           find()의 반환된 값 start가 string::npos이면 
     //               여기서 false 리턴함 (line_num행을 찾지 못한 경우)
     //           start 값을 1 증가시켜 다음 행의 시작 위치로 조정
+    for( int i=0; i<line_num; i++ ){
+        start = mStr.find("\n",start);
+        if( start == mStr.npos )
+        return false;
+        start += 1;
+    }
               
     *pstart = start; // line_num 행의 시작 위치를 기록
 
@@ -406,7 +419,10 @@ bool Memo::find_line(int line_num, size_t* pstart, size_t* plen) {
     //       찾았으면 그 행의 길이를 계산하여 *plen에 저장
     //       찾지 못한 경우 string::npos를 *plen에 저장 /* 예를들어, 실제로 행이 
     //           [0], [1], [2] 행까지 있는데 [3] 행의 시작(메모의 끝 위치)을 찾을 경우에 해당함 */
-
+    *plen = mStr.find("\n",start);
+    if( *plen != mStr.npos ){
+        *plen -= start;
+    }
     return true; // line_num 행을 찾았다는 것을 의미함
 }
 
@@ -417,10 +433,114 @@ void Memo::deleteLine() {
     // TODO: 만약 line_num 행을 찾지 못한 경우 
     //       ( 즉, mStr이 비어 있거나 또는
     //         find_line(line_num,&start,&len) 호출하여 line_num 행을 못 찾았거나(false) 또는
-    //         찾았지만(true) 행의 시작 위치인 start가 메모 텍스트의 끝인 경우(start == mStr.size()) )  
+    //         찾았지만(true) 행의 시작 위치인 start가 메모 텍스트의 끝인 경우(start == mStr.size()) )
     //           "Out of line range" 문장 출력
     //       line_num 행을 찾은 경우 mStr에서 해당 행을 삭제한 후 dispByLine() 호출
     
+    if( find_line(line_num,&start,&len) && start != mStr.size()  ){
+    mStr.erase(start,len+1);
+    dispByLine();
+    }else{
+        cout<<"Out of line range\n";
+    }
+}
+
+// 교체할 행 번호와 교체할 문자열을 입력 받은 후 해당 행을 입력 받은 행으로 교체함
+void Memo::replaceLine() {
+    size_t start, len, line_num = UI::getPositiveInt("Line number to replace? ");
+
+    // TODO: find_line(line_num, &start, &len) 호출하여 line_num 행을 찾음
+    //       만약 해당 행을 찾지 못한 경우 "Out of line range"를 출력하고 리턴함
+    if( find_line(line_num, &start, &len) == false ){// if 조건문 돌면서 다 구함
+        cout<<"Out of line range\n";
+        return;
+    }
+
+    string line = UI::getNextLine("Input a line to replace:\n");
+    //지우고 삽입
+    mStr.erase(start,len+1);
+    mStr.insert(start,line+'\n');
+    dispByLine();
+    // TODO: 읽은 line의 끝에 '\n'을 추가하라.
+    //       찾은 행을 line 문자열로 교체한 후 dispByLine() 호출
+}
+
+// 모든 행을 한 행씩 앞으로 옮김 (즉, 첫행을 마지막으로 옮김)
+// 즉, 첫 행(행 번호 0)을 삭제한 후 삭제된 행을 맨 마지막에 다시 추가함
+void Memo::scrollUp() {
+    size_t start, len;
+    // TODO: find_line()를 이용해 첫 행을 찾음
+    //       mStr의 첫 행을 mStr의 맨 마지막에 추가함
+    //       mStr의 첫 행을 삭제한 후 dispByLine() 호출
+
+    find_line(0,&start,&len);//첫줄 시작과 길이 가져와서
+    string tmp = mStr.substr(start,len+1);//첫줄 저장하고
+    mStr.erase(start,len+1);//첫줄 삭제
+    mStr.insert(mStr.size(),tmp);//저장했던 첫줄 끝에 붙이기 어펜드해도됨
+
+    dispByLine();
+}
+
+// 마지막 행의 시작 위치를 찾아서 반환함
+size_t Memo::find_last_line() {
+    for (size_t start = 0, pos = 0; true; start = pos) {
+
+        pos = mStr.find("\n",start+1);
+        if( pos == mStr.npos || ++pos == mStr.size() ){
+            return start;
+        }
+        // TODO: start 위치 이후로 행 끝을 찾아 pos에 저장 
+        //       행 끝을 못 찾았거나 또는 ++pos가 mStr의 길이와 같으면(마지막 행) start 값 리턴
+    }
+}
+
+void Memo::scrollDown() {
+    size_t last = find_last_line();
+    size_t len = mStr.size() - last;
+    // 마지막 행을 서브 string으로 발췌하여 별도 저장
+    string tmp = mStr.substr(last,len);
+    // 마지막 행 삭제
+    mStr.erase(last,len);
+    // 발췌했던 마지막 행을 맨 처음에 삽입한 후 
+    mStr.insert(0,tmp);
+
+    dispByLine();
+}
+
+/*
+In war, he is daring, boastful, cunning, ruthless, self-denying,
+and self-devoted; in peace, just, generous, hospitable, revengeful,
+superstitious, modest, and commonly chaste.
+These are qualities, it is true, which do not distinguish all alike;
+but they are so far the predominating traits of these remarkable people
+as to be characteristic.
+It is generally believed that the Aborigines of the American continent
+have an Asiatic origin.
+
+*/
+// 사용자로부터 메모 데이타를 행 단위로 입력받아 기존의 mStr에 계속 추가함
+// 입력의 끝은 빈 줄을 입력하면 된다. 
+void Memo::inputMemo() {
+
+    // TODO: 기존 mStr의 문자열을 모두 삭제하고, 크기를 0으로 만듦
+    mStr.clear();
+
+    string line;
+    cout << "--- Input memo lines, and then input empty line at the end ---" << endl;
+    while (true) {
+        getline(cin, line);
+        if (UI::echo_input) cout << line << endl; 
+        if( line == "" )
+        return;
+        
+        mStr.append(line+"\n");
+
+        // TODO: getline(cin, line)을 사용하여 키보드로부터 한 줄을 입력 받아 line에 저장
+        //       if (UI::echo_input) cout << line << endl; // 자동체크 때 실행됨
+        //       입력 받은 한 행이 빈 줄이면 리턴함
+        //       입력 받은 행 끝에 "\n"을 추가
+        //       입력 받은 행을 mStr의 끝에 추가
+    }
 }
 
 
@@ -449,7 +569,7 @@ void Memo::run() {
     func_t func_arr[] = {
             nullptr, &Memo::displayMemo
             ,&Memo::findString, &Memo::compareWord, &Memo::dispByLine,
-             &Memo::deleteLine//, &Memo::replaceLine, &Memo::scrollUp, &Memo::scrollDown, &Memo::inputMemo
+             &Memo::deleteLine, &Memo::replaceLine, &Memo::scrollUp, &Memo::scrollDown, &Memo::inputMemo
         };
     
     int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 배열의 길이
@@ -549,9 +669,14 @@ void Memo::run() {
     cout << "Password changed" << endl;
     }
 
-    void CurrentUser::manageMemo() { // Menu item 9
+    // Person 객체에 저장되어 있던 메모 내용을 memo 객체로 복사하고
+// 메모 메뉴에서 메모의 추가, 삭제, 교체 등의 조작이 끝나고 나면 (memo.run())
+// 반대로 memo에 있던 메모 내용을 다시 Person 객체로 복사한다.
+void CurrentUser::manageMemo() { // Menu item 9
+    memo.set_c_str(pUser->getMemo());
     memo.run();
-    }
+    pUser->setMemo(memo.get_c_str());
+}
 
     void CurrentUser::run() {
         using CU = CurrentUser;
@@ -830,7 +955,7 @@ void PersonManager::run() {
     int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 길이
     string menuStr =
         "====================== Person Management Menu ===================\n"
-        "= 0.Exit 1.Display 2.Append 3.Clear 4.Login(CurrentUser, ch4_2) =\n"
+        "= 0.Exit 1.Display 2.Append 3.Clear 4.Login(CurrentUser, ch4)   =\n"
         "=================================================================\n";
 
     while (true) {
@@ -1014,8 +1139,7 @@ public:
      ******************************************************************************/
 
     void run() {
-    //MainMenu().run(); 현재 편의를 위해 잠시 수정상태
-    Memo().run();
+    MainMenu().run();
 }
 
     /******************************************************************************
