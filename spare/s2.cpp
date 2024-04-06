@@ -1,5 +1,5 @@
+//https://www.acmicpc.net/problem/2742 기찍 N
 #include <iostream>
-//https://www.acmicpc.net/problem/2742
 int main(){
 using namespace std;
 
