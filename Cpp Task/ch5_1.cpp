@@ -105,8 +105,8 @@ Person::Person(const string name, int id, double weight, bool married, const cha
 // Person 멤버 데이타 중에 동적으로 메모리를 할당 받는 멤버가 없기 때문에
 // 복사생성자를 직접 만들지 않아도 컴파일러가 자동으로 아래와 같은 복사생성자를 만들어 준다.
 // 여기서 복사생성자를 굳이 만든 이유는 실행과정을 확인하기 위한 출력문을 넣기 위해서이다.
-Person::Person(const Person &p):
-    name(p.name), id{p.id}, weight{p.weight}, married{p.married}  {//TODO [문제1]:나머지 weight, married 멤버도 초기화
+Person::Person(const Person& p):
+    name(p.name), id{p.id}, weight{p.weight}, married{p.married}  {//TODO [문제1]:나머지 weight, married 멤버도 초기화 {
     /*
     TODO [문제1]: address와 memo_c_str 역시 setAddress(), setMemo()를 호출하여 
                  p의 상응하는 멤버를 복사해서 초기화하라.
@@ -865,7 +865,8 @@ PersonManager::PersonManager(Person* array[], int len) {
 cout << "PersonManager::PersonManager(array[], len)" << endl;
 /* TODO 문제 [4] */
 for( int i=0; i<len; i++ ){
-    Person *tmp = new Person(*array[i]);
+    Person *s = array[i];
+    Person *tmp = new Person(s->getName(),s->getId(),s->getWeight(),s->getMarried(),s->getAddress());
     persons.push_back(tmp);
 }
 
@@ -1134,152 +1135,9 @@ class CopyConstructor
 public:
     // u는 일반 생성자, backup은 복사생성자를 이용하여 멤버를 초기화
     CopyConstructor(): u("u", 1, 70, true, "Gwangju"), backup(u) { }
-    
-
-
-    
-
-    void explicitCopyConstructor() { // Menu item 1
-        cout << "u: "; u.println();
-        
-        // TODO: Person형의 객체 p를 선언하되 복사생성자를 사용하여 u을 복사하여 초기화하라. 
-        Person p(u);
-
-        // TODO: 실행결과를 참고하여 지역 객체 p의 멤버 값들을 변경하라.
-        p.set("p",2,80,false,"Seoul");
-
-        cout << "u: "; u.println();
-        cout << "p: "; p.println();
-        // 함수 리턴 시 객체 p의 소멸자가 실행됨
-    }
-
-    void referenceVariable() { // Menu item 2
-        cout << "p: ";
-        Person p(u);
-        
-        //TODO: 지역 변수 p와 객체를 공유하는 Person형의 참조 변수 r을 선언하고 초기화하라. 
-        Person &r(p);
-
-        cout << "p: "; p.println();         // r은 참조이고 u와 동일한 객체를 공유하므로
-        cout << "r: "; r.println();         // 두 출력물은 동일한 객체를 출력함
-
-        //TODO: 실행결과를 참고하여 참조 변수 r의 멤버 값들을 변경하라.
-        r.set("r",2,80,false,"Seoul");
-        //r 2 80 false :Seoul:
-
-        cout << "p: "; p.println();
-        cout << "r: "; r.println();
-
-        //TODO: 실행결과를 참고하여 지역 객체 p의 멤버 값들을 변경하라.
-        p.set("p",1,70,true,"Gwangju");
-        //p 1 70 true :Gwangju:
-
-        cout << "p: "; p.println();
-        cout << "r: "; r.println();
-        // r은 객체 p를 공유하는 참조이므로 함수 리턴 시 소멸자가 실행되지 않음
-    }
-
-
-
-
-    // 매개변수 a는 함수호출시 복사 생성자에 의해 복사되어 초기화됨; call by value로 매개변수를 선언하라.
-    void function_argument( Person a/* TODO: 매개변수 a 선언; [교재 예제 5-12] 참조 */ ) { // Menu item 3-1
-        cout << "a: "; a.println();
-        cout << "a.setName(a)" << endl;
-        a.setName("a");
-        cout << "a: "; a.println();
-    }
-
-    Person return_member_object() { // Menu item 3-2
-        //TODO: u 객체를 반환함 (여기서는 임시 객체에 복사됨); [교재 예제 5-12] 참조
-        return u;
-    }
-
-    void implicitCopyConstructor() { // Menu item 3
-        cout << "u: "; u.println();
-        cout << "\nimplicit copy constructor 1: operator =" << endl;
-        cout << "Person p = u" << endl;
-        cout << "p: ";
-        
-        //TODO: 새로운 Person 객체 p를 선언하고 객체 u를 p에 대입하여 초기화하라.(묵시적 복사생성자를 호출) [교재 예제 5-12] 참조
-        Person p = u;
-        
-        cout << "p.setName(p)" << endl;
-        p.setName("p");
-        cout << "p: "; p.println();
-
-        cout << "\nimplicit copy constructor 2: function argument" << endl;
-        cout << "call function_argument(u)" << endl;
-        
-        // 묵시적으로 복사 생성자를 호출하여 함수 인자를 복사하여 함수의 매개변수 a에 넘김
-        function_argument(u); 
-        cout << "function_argument(u) returned" << endl;
-
-        cout << "\nimplicit copy constructor 3: return object" << endl;
-        cout << "call return_member_object().println()" << endl;
-        return_member_object().println();
-          // return_member_object()의 리턴 값을 복사생성자에 의해 임시객체(이름 없는 지역변수)에 복사하고
-          // 그 임시 객체의 println()을 호출하여 객체를 출력한다.
-          // 출력 후 더 이상 그 임시 객체가 필요 없기 때문에 소멸자를 호출하여 바로 임시 객체를 소멸시킴
-        cout << "return_member_object() returned" << endl;
-    }
-
-    Person return_local_object() { // Menu item 4-1
-        Person pL("pL", 0, 70, true, "Gwangju Nam-gu");
-        cout << "return_local_object() returns pL" << endl;
-        return pL;
-        // 정석대로 하면 리턴하기 전에 복사생성자를 호출하여 지역 객체 pL를 복사해 준 후 
-        // 리턴 직전에 pL를 소멸해야 한다.
-        // 그러나 컴파일러는 효율적인 실행을 위해 복사생성자와 소멸자를 호출하지 않고
-        // 함수가 리턴한 후 return_local_object().println() 호출 시 
-        // 함수의 지역 객체 pL의 메모리를 그대로 재사용한다. (소멸되지 않았으므로)
-        // println() 실행 후 더 이상 객체가 필요 없으면 그제서야 소멸자를 호출하여 소멸시킴
-    }
-
-    Person return_temporary_object() { // Menu item 4-2
-        cout << "return_temporary_object() returns Person(pT, 0, 70, true, Gwangju Nam-gu)" << endl;
-        return Person("pT", 0, 70, true, "Gwangju Nam-gu"); // 임시 객체를 리턴함
-        // return {"p", 0, 70, true, "Gwangju Nam-gu"}; // 위 문장과 동일한 기능임
-        // 위 문장은 컴파일러가 함수의 리턴 타입을 참고하여 
-        //   Person("p", 0, 70, true, "Gwangju Nam-gu")으로 자동 처리함
-    }
-
-    void temporaryObject() { // Menu item 4
-        cout << "temporary object 1: Person(p0, 10, 70, true, Gwangju)" << endl;
-        // 임시객체 생성 방법: 클래스이름(생성자 인자들)
-        // 생성자 호출된 후 아래 문장이 끝나면 바로 소멸자가 호출됨
-        // 주요: 임시 객체가 포함된 해당 문장의 실행이 종료되면 임시 객체는 소멸됨
-        Person("p0", 10, 70, true, "Gwangju");
-
-        cout << "\ntemporary object 2: Person(p1, 11, 60, false, Seoul).println()" << endl;
-        // 임시객체: 생성자 호출, println() 호출, 소멸자 호출
-        Person("p1", 11, 60, false, "Seoul").println();
-
-        cout << "\nreturn_member_object().println()" << endl;
-        return_member_object().println(); // 복사 생성자 활용
-        cout << "return_member_object() returned" << endl;
-
-        cout << "\nreturn_local_object().println()" << endl;
-        return_local_object().println(); // 복사 생성자 사용하지 않음
-        cout << "return_local_object() returned" << endl;
-
-        cout << "\nPerson pL = return_local_object()" << endl;
-        Person pL = return_local_object(); // 복사 생성자 활용
-        cout << "return_local_object() returned" << endl;
-        pL.println();
-
-        cout << "\nreturn_temporary_object().println()" << endl;
-        return_temporary_object().println();  // 생성자 활용
-        cout << "return_temporary_object() returned" << endl;
-        
-        cout << "\nPerson pT = return_temporary_object()" << endl;
-        Person pT = return_temporary_object();  // 생성자 활용
-        cout << "return_temporary_object() returned" << endl;
-        pT.println();
-    }
 
     void run() {
-        using CC = CopyConstructor;
+        //using CC = CopyConstructor;
 
         // TODO 문제 [3]: func_t, func_arr[], menuCount 선언
 
@@ -1292,35 +1150,11 @@ public:
             "++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
 
         // TODO 문제 [3]: while 문장 삽입하여 선택된 메뉴항목 실행하는 함수를 호출하라.
-        using func_t = void (CopyConstructor::*)();
-        func_t func_arr[] = {
-            nullptr,CC::explicitCopyConstructor,CC::referenceVariable,//주소아니어도되는데?
-            CC::implicitCopyConstructor,CC::temporaryObject,
-            };
-        int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 길이
-        while(true){
-            int menuItem = UI::selectMenu(menuStr,menuCount);
-            if( menuItem == 0 ) return;
-
-            (this->*func_arr[menuItem])();// func_arr의 메뉴아이템 번째의 함수를 실행
-        }
-
-// using func_t = void (PersonManager::*)();
-// using PM = PersonManager; // 코딩 길이를 줄이기 위해
-// func_t func_arr[] = {
-//     nullptr, &PM::display, &PM::append, &PM::clear, &PM::login,
-// };
-// int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 길이
-// string menuStr =
-//     "====================== Person Management Menu ===================\n"
-//     "= 0.Exit 1.Display 2.Append 3.Clear 4.Login(CurrentUser, ch4)   =\n"
-//     "=================================================================\n";
-
-// while (true) {
-//     int menuItem = UI::selectMenu(menuStr, menuCount);
-//     if (menuItem == 0) return;
-//     (this->*func_arr[menuItem])();
-// }
+        cout << menuStr;
+        u.println();
+        backup.setName("backup");
+        backup.println();
+        cout << "------------------" << endl;
   }
 }; // ch5_1: Reference and CopyConstructor
 
