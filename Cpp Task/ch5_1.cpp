@@ -1278,6 +1278,159 @@ public:
         pT.println();
     }
 
+    // TODO: 아래 함수 매개변수를 call by value가 되게 Person의 객체 p로 선언하라.
+    void call_by_value( Person p ) { // Menu item 5-1: call by value: 복사생성자에 의해 복사됨
+        cout << "p: "; p.println();
+        cout << "u: "; u.println();
+        cout << "p.set(p, 2, 80, false, Seoul)" << endl;
+        p.set("p", 2, 80, false, "Seoul");
+        cout << "p: "; p.println();      // p는 u과 다른 메모리를 사용하는 객체임
+        cout << "u: "; u.println(); // u은 영향을 받지 않음
+        // 함수 리턴 시 매개변수 p 객체의 소멸자 함수가 호출됨
+    }
+
+    // TODO: 아래 함수 매개변수를 call by reference가 되게 Person의 참조변수 p로 선언하라.
+    void call_by_reference( Person &p/* TODO */ ) { // Menu item 5-2: call by reference
+        cout << "p: "; p.println();   // p는 u의 참조이므로 u와 동일한 객체 메모리를 공유함
+        cout << "u: "; u.println();
+        cout << "p.set(p, 2, 80, false, Seoul)" << endl;
+        p.set("p", 2, 80, false, "Seoul");
+        cout << "p: "; p.println();   // p와 u은 동일한 객체 메모리를 공유하므로 항상 내용이 동일함
+        cout << "u: "; u.println();
+        u = backup;       // u 값을 원래 값으로 복구
+        // 매개변수 p는 참조이므로 함수 리턴 시 소멸자가 호출되지 않음
+    }
+
+    // TODO: 아래 함수 매개변수를 call by address가 되게 Person에 대한 포인터 변수 p로 선언하라.
+    void call_by_address( Person *p/* TODO */ ) { // Menu item 5-3: call by address
+        cout << "p: "; p->println();   // p는 u 메모리를 포인터하므로 동일한 내용이 출력됨
+        cout << "u: "; u.println();
+        cout << "p->set(p, 2, 80, false, Seoul)" << endl;
+        p->set("p", 2, 80, false, "Seoul");
+        cout << "p: "; p->println();   // p는 u 메모리를 포인터하므로 항상 동일한 내용이 출력됨
+        cout << "u: "; u.println();
+        u = backup;       // u 값을 원래 값으로 복구
+        // 매개변수 p는 포인터이므로 함수 리턴 시 소멸자가 호출되지 않음
+    }
+
+    void functionParameterType() { // Menu item 5
+        cout << "call_by_value" << endl;
+        // 함수 호출 시 복사생성자를 통해 u 객체를 매개변수 p에 복사
+        // TODO: call_by_value(u)을 호출하되 멤버 객체 u을 인자로 넘겨 주어라.
+        call_by_value(u);
+        cout << endl;
+
+        cout << "call_by_reference" << endl;
+        // TODO: call_by_reference(u)을 호출하되 멤버 객체 u을 인자로 넘겨 주어라.
+        call_by_reference(u);
+        cout << endl; // 단순히 u의 참조만 전달됨
+
+        cout << "call_by_address" << endl;
+        // TODO: call_by_address(&u)을 호출하되 멤버 객체 u의 주소를 인자로 넘겨 주어라.
+        call_by_address(&u);
+        cout << endl; // 단순히 u의 주소값, 즉 포인터가 전달됨
+    }
+
+// TODO: 아래 주석(/* */)을 지우고 Person 객체를 리턴하도록 함수의 리턴 타입을 선언하라.
+    Person return_value() {                   // return value
+        return u;
+    }
+
+   void return_value_test() { // Menu item 6-1
+        cout << "--- return_value_test() ---" << endl;
+        cout << "call return_value()" << endl;
+        cout << "p: ";
+
+        //TODO: Person형 객체 변수 p를 선언하고 return_value()의 리턴 값으로 초기화하라.
+        Person p = return_value();
+
+        cout << "return_value() returned" << endl;
+        cout << "p: "; p.println();
+        cout << "p.set(p, 2, 80, false, Seoul)" << endl;
+        p.set("p", 2, 80, false, "Seoul");
+        cout << "p: "; p.println();        // 두 객체의 name은 다른 값임
+        cout << "u: "; u.println();
+        // 함수 리턴 시 지역변수 p 객체의 소멸자 함수가 호출됨
+    }
+
+// TODO: 아래 주석(/* */)을 지우고 
+//       Person 객체의 참조를 리턴하도록 함수의 리턴 데이타 타입을 선언하라.
+    Person& return_reference() {                  // return reference
+        return u;
+    }
+
+    void return_reference_test() { // Menu item 6-2
+        cout << "--- return_reference_test() ---" << endl;
+        cout << "call return_reference()" << endl;
+        cout << "p: ";
+
+        //TODO: Person형 객체 변수 p를 선언하고 return_reference()의 리턴 값으로 초기화하라.
+        Person p = return_reference();
+
+        cout << "return_reference() returned" << endl;
+        cout << "p.set(p, 2, 80, false, Seoul)" << endl;
+        p.set("p", 2, 80, false, "Seoul");
+        cout << "p: "; p.println();
+        cout << "u: "; u.println();
+        cout << endl;
+
+        cout << "call return_reference()" << endl;
+
+        //TODO: Person형 참조 변수 r를 선언하고 return_reference()의 리턴 값으로 초기화하라.
+
+        Person &r = return_reference();// r는 리턴된 u의 참조를 저장하고 있는 참조변수임
+        cout << "return_reference() returned" << endl;
+        cout << "u: "; u.println();
+        cout << "r.set(p, 2, 80, false, Seoul)" << endl;
+        r.set("r", 2, 80, false, "Seoul");
+        cout << "r: "; r.println();
+        cout << "u: "; u.println();
+        u = backup;
+        // 함수 리턴 시 지역 객체 p의 경우 소멸자 함수가 호출되지만
+        //           참조 변수 r는 소멸자가 호출되지 않음
+    }
+
+// TODO: 아래 주석을 지우고 함수의 리턴 값을 참조하여 함수의 리턴 데이타 타입을 적절히 선언하라.
+    Person* return_address() {                  // return address
+        return &u;
+    }
+
+    void return_address_test() { // Menu item 6-3
+        cout << "--- return_address_test() ---" << endl;
+        cout << "call return_address()" << endl;
+
+        //TODO: Person형 포인터 변수 p를 선언하고 return_address()의 리턴 값으로 초기화하라.
+        Person *p = return_address();
+
+        cout << "return_address() returned" << endl;
+        cout << "p: "; p->println();
+        cout << "u: "; u.println();
+        cout << "p.set(p, 2, 80, false, Seoul)" << endl;
+        p->set("p", 2, 80, false, "Seoul"); // p는 u 객체를 포인터하므로 u과 동일한 메모리를 공유함
+        cout << "p: "; p->println();
+        cout << "u: "; u.println();
+        u = backup;
+        // 함수 리턴 시 p는 포인터 변수이므로 소멸자가 호출되지 않음
+    }
+
+    void returnDataType() { // Menu item 6
+        return_value_test();        cout << endl;
+        return_reference_test();    cout << endl;
+        return_address_test();
+    }
+
+// 아래 함수를 CopyConstructor::run() 함수 앞쪽에 배치하고,
+// CopyConstructor::run() 내의 func_arr[]에 아래 멤버 함수 주소를 추가하라.
+//-----------------------------------------------------------------------------
+    void inputPerson() { // Menu item 7
+    	cout << "u: "; u.println();
+        while (!UI::inputPerson(&u)) ;  // USER 11 88 false :DONG-GU, DAEGU:
+        backup = u;
+        cout << "u: "; u.println();
+    }
+
+
+
     void run() {
         using CC = CopyConstructor;
 
@@ -1294,8 +1447,10 @@ public:
         // TODO 문제 [3]: while 문장 삽입하여 선택된 메뉴항목 실행하는 함수를 호출하라.
         using func_t = void (CopyConstructor::*)();
         func_t func_arr[] = {
-            nullptr,CC::explicitCopyConstructor,CC::referenceVariable,//주소아니어도되는데?
-            CC::implicitCopyConstructor,CC::temporaryObject,
+            nullptr,&CC::explicitCopyConstructor,&CC::referenceVariable,//주소아니어도되는데?
+            &CC::implicitCopyConstructor,&CC::temporaryObject,
+            &CC::functionParameterType,&CC::returnDataType,
+            &CC::inputPerson
             };
         int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 길이
         while(true){
