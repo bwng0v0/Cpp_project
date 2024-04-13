@@ -35,8 +35,8 @@ class Person
     int    id;              // Identifier
     double weight;          // 체중
     bool   married;         // 결혼여부
-    char   address[40];     // 주소
-    char   memo_c_str[1024]; // 메모장
+    char*  address;         // 주소:  5_2에서 []에서 *로 변경
+    char*  memo_c_str;      // 메모장: 5_2에서 []에서 *로 변경
     string passwd;          // 비번
 
 protected:
@@ -56,22 +56,25 @@ public:
     void setId(int pid)                   { id = pid; }
     void setWeight(double pweight)        { weight = pweight; }
     void setMarried(bool pmarried)        { married = pmarried; }
-    void setAddress(const char* paddress) { strcpy(address, paddress); }
+    void setAddress(const char* address); // 5_2에서 수정
 
     const string getName()    { return name; }
     string      getPasswd()  { return passwd; }
     int         getId()      { return id; }
-    double      getWeight()  { /* TODO: [문제 2] */ return weight; }  // 구현 시
-    bool        getMarried() { /* TODO: [문제 2] */ return married; }  // 리턴 값들을
-    const char* getAddress() { /* TODO: [문제 2] */ return address; } // 수정하시오.
+    double      getWeight()  {  return weight; }  // 구현 시
+    bool        getMarried() {  return married; }  // 리턴 값들을
+    const char* getAddress() {  return address; } // 수정하시오.
 
     void input(istream* pin)  { inputMembers(pin); } // ch3_2에서 추가
     void print(ostream* pout) { printMembers(pout); }
     void println()            { print(&cout); cout << endl; }
     void whatAreYouDoing();                          // ch3_2에서 추가
     bool isSame(const string name, int pid);         // ch3_2에서 추가
-    void setMemo(const char* c_str)      { strcpy(memo_c_str,c_str); }
+    void setMemo(const char* c_str);      // 5_2에서 수정
     const char* getMemo()    { return memo_c_str; }
+    void copyAddress(const char* address); // 5_2에서 추가
+    void copyMemo(const char* c_str);      // 5_2에서 추가
+    Person& assign(const Person& p);
 };
 
 Person::Person(): Person("") {
@@ -90,44 +93,55 @@ Person::Person(const string name): Person("",0,0,0,"") /* : TODO [문제 2] */ {
     // cout << "Person::Person(\"" << name << "\"):"; println();
 }
 
-Person::Person(const string name, int id, double weight, bool married, const char *address) :
-        name{name}, id{id}, weight{weight}, married{married}, memo_c_str{} {
-    // 위에서 각 멤버를 초기화하는 {}는 각 매개변수 값을 객체의 상응하는 멤버에 설정하는 것이다. 즉,
-    // this->id=id, this->weight=weight, this->married=married와 동일하다.
-    // 여기서 this는 해당 객체를 포인터하는 포인터 변수이며, (다음 장에서 설명될 예정임)
-    // this->id는 해당 객체의 멤버 id를 지칭하며 =의 우측변수 id는 함수의 매개변수이다.
-    // 값을 간단히 대입하는 것은 위처럼 하면 되지만 name[], address[]와 같은 배열 복사 함수 
-    // 호출 또는 다른 함수를 호출할 때는 생성자 함수의 몸체 { } 내에서 호출해야 한다.
-
-
-    setName(name);
-    setAddress(address);
-    // TODO: [문제 2] 
+Person::Person(const string name, int id, double weight, bool married, const char* address):
+        name(name), id{id}, weight{weight}, married{married}, memo_c_str{} {
+    // 생성자 서두에서 memo_c_str{}은 초기 값으로 디폴트 값인 nullptr(실제로는 주소 값 0)로 설정됨
+    copyAddress(address);
     cout << "Person::Person(...):"; println();
 }
-
-// Person 멤버 데이타 중에 동적으로 메모리를 할당 받는 멤버가 없기 때문에
-// 복사생성자를 직접 만들지 않아도 컴파일러가 자동으로 아래와 같은 복사생성자를 만들어 준다.
-// 여기서 복사생성자를 굳이 만든 이유는 실행과정을 확인하기 위한 출력문을 넣기 위해서이다.
-Person::Person(const Person &p):
-    name(p.name), id{p.id}, weight{p.weight}, married{p.married}  {//TODO [문제1]:나머지 weight, married 멤버도 초기화
-    /*
-    TODO [문제1]: address와 memo_c_str 역시 setAddress(), setMemo()를 호출하여 
-                 p의 상응하는 멤버를 복사해서 초기화하라.
-    */
-   setAddress(p.address);
-   setMemo(p.memo_c_str);
+// 클래스 멤버들 중 메모리를 할당 받은 포인터 변수가 있으면 복사 생성자도 수정하여야 한다.
+// Person의 복사 생성자를 아래처럼 수정하라.
+// copyAddress()와 copyMemo()는 멤버 address와 memo_c_str 를 위한 메모리를 동적으로 할당받고
+// p 객체의 주소와 메모를 복사하는 역할을 한다. 
+// 이 두 함수는 생성자 또는 복사생성자에서 처음으로 두 멤버를 초기화할 때만 사용된다. 
+// 이렇게 초기화된 두 멤버들을 수정하고자 할 때는 setAddress()와 setMemo()를 사용해야 함
+Person::Person(const Person& p): name(p.name), id{p.id}, weight{p.weight}, married{p.married} {
+    // TODO: p 객체의 address 문자열을 멤버 address에 복사함 
+    //       (즉, setAddress() 대신 copyAddress() 사용해야 함)
+    //       p 객체의 메모 문자열을 멤버 memo_c_str에 복사함 (copyMemo() 사용해야 함)
+    copyAddress(p.address);
+    copyMemo(p.memo_c_str);
     cout << "Person::Person(const Person&):"; println();
 }
 
 
 Person::~Person() {
     cout << "Person::~Person():"; println();
+
+    if (address) cout << "address";
+    if (address && memo_c_str) cout << ", ";
+    if (memo_c_str) cout << "memo_c_str";
+    if (address || memo_c_str) cout << " deleted" << endl;
+    // 위 if 문장들은 i) "address deleted" 또는 
+    // ii) "memo_c_str deleted" 또는 
+    // iii) "address, memo_c_str deleted" 가 출력됨; 즉, 셋 중 하나가 출력됨
+
+    if( address != nullptr )
+    delete[] address;
+
+    if( memo_c_str != nullptr )
+    delete[] memo_c_str;
+    // TODO: address와 memo_c_str가 포인터하는 배열 메모리를 반납한다.
+    //       이들 포인터가 nullptr인 경우 반납하지 말아야 한다.
 }
 
-void Person::printMembers(ostream* pout)   {
-    // TODO: [문제 1]
-    *pout<<name<<' '<<id<<' '<<weight<<' '<<married<<" :"<<address<<':';
+// void Person::printMembers(ostream* pout)   {
+//     // TODO: [문제 1]
+//     *pout<<name<<' '<<id<<' '<<weight<<' '<<married<<" :"<<address<<':';
+// }
+void Person::printMembers(ostream* pout) {
+    *pout<<name<<" "<<id<<" "<<weight<<" "<<married<< " :"<<(address==nullptr?"":address)<< ":";
+    // 3항 연산자를 이용하여 address가 nullptr일 경우 ""를 출력하고 아닌 경우 address를 출력하라. 
 }
 
 void Person::set(const string pname, int pid, double pweight,
@@ -140,16 +154,68 @@ void Person::set(const string pname, int pid, double pweight,
     setAddress(paddress);
 }
 
+// void Person::inputMembers(istream* pin)   {
+//     // TODO: [문제 7]
+//     *pin>>name>>id>>weight>>married;
+//     pin->getline(address, sizeof(address), ':'); // 말씀하셨던 버퍼에 \n이 남아서 그걸 치우고 입력받기위해 두번씀
+//     pin->getline(address, sizeof(address), ':');
+// }
+
 void Person::inputMembers(istream* pin)   {
-    // TODO: [문제 7]
-    *pin>>name>>id>>weight>>married;
+    *pin >> name >> id >> weight >> married;
+    if (!(*pin)) return;
+    
+    // 지역변수로 미리 큰 주소용 배열을 잡는다.
+    char address[40];    // ch5_2에서 추가됨
     pin->getline(address, sizeof(address), ':'); // 말씀하셨던 버퍼에 \n이 남아서 그걸 치우고 입력받기위해 두번씀
     pin->getline(address, sizeof(address), ':');
+    // TODO: 기존 코드를 그대로 사용해서 키보드에서 주소를 읽어 위 지역변수 address[40]에 저장한다.
+    //       기존 코드와 동일하지만 기존의 코드는 멤버 address에 바로 읽어 들이는 것이고,
+    //       여기선 위 지역변수 address[40]에 먼저 읽어 들이고 이를 멤버에 복사한다.
+
+    // 아래 함수를 통해 위 지역변수 address[]에 있는 주소를 멤버 address로 복사한다. 
+    // 아래 함수에서 address[]의 문자열 길이만큼 메모리를 할당(멤버 address용) 받은 후 복사한다.
+    // 멤버 address는 이전에 이미 초기화되었기 때문에 copyAddress()가 아닌 아래 함수를 사용함
+    setAddress(address); // ch5_2에서 추가됨
 }
+
+
+
+
+
+
 
 void Person::whatAreYouDoing() {
     // TODO: [문제 5]
     cout<<name<<" is taking a rest.\n";
+}
+
+// 깊은 대입(=) 연산: p의 모든 멤버 값을 this에 복사한다. 멤버가 동적으로 메모리를 할당받은 경우
+// 먼저 this의 멤버의 메모리를 먼저 반납하고 새로 메모리를 할당 받은 후 복사한다. 
+Person& Person::assign(const Person& p) {
+
+// TODO: name, passwd, id, weight, married 멤버의 경우 = 연산자를 사용하여 p의 상응하는 
+//       멤버 값을 this의 멤버에 바로 대입시켜라. (C++의 기본 데이타 타입과 string인 경우)
+//       즉, this의 각 멤버에 =를 이용해 p의 멤버 값을 저장하라.
+name = p.name; id = p.id; weight = p.weight; married = p.married;
+
+          
+//p.addres와 p.memo_c_str의 경우 각각 setAddress(), setMemo()를 호출하여
+//this의 addres와 memo_c_str에 복사하라. 이 함수들은 기존에 할당 받았던 this의
+//address와 memo_c_str 멤버의 메모리를 먼저 반납하고 새로 할당 받은 후 복사한다.
+setAddress(p.address);
+setMemo(p.memo_c_str);
+
+// 복사생성자에서는 copyAddress()와 copyMemo()를 호출했는데 (처음 초기화할 때)
+// 여기서는 setAddress(), setMemo()를 호출하였다. (기존 값을 변경하고자 할 때)
+// 왜 그렇게 했는지 이해했는가?
+
+//set은 기존멤버의 포인터가 nullptr이 아니라면(가리키는 메모리가있다면) 반납후 새문자열을 가리킴
+//
+
+    return *this; // this 객체 자신의 참조자를 반환한다.
+    // 자신 객체의 참조자를 리턴했기 때문에 c.assign(p.assign(backup)).println() 등의
+    // 연속된 함수 호출도 가능해 진다. 즉 (c = p = backup).println()과 같은 효과
 }
 
 bool Person::isSame(const string pname, int pid) {
@@ -157,6 +223,73 @@ bool Person::isSame(const string pname, int pid) {
     return name == pname && id == pid;
 }
 
+// 처음 객체가 초기화될 때(생성자 또는 복사생성자) address 멤버를 초기화하고자 할 때 호출된다. 
+// 즉, 일반 생성자 또는 복사 생성자에서만 호출됨.
+// 새로 할당받은 메모리에 매개변수 address 문자열을 복사한다.
+void Person::copyAddress(const char* address) {
+    // TODO: 매개변수 address가 nullptr인 경우, address 멤버도 nullptr로 설정하고 리턴하라.
+    //       매개변수 address가 포인터하는 문자열을 포함할 수 있는 배열 메모리를 할당 받은 후
+    //       할당된 메모리 주소를 멤버 address에 저장하고, 
+    //       매개변수의 문자열을 멤버 변수의 할당받은 메모리로 복사한다. 
+    if( address==nullptr ){
+    this->address = nullptr;
+    return;
+    }
+    
+    char* tmp = new char[strlen(address)+1];//메모리할당
+    strcpy(tmp,address);//할당받은 메모리에 매개변수 복사
+    this->address = tmp;//매개변수를 복사한 문자열을 가리키는 포인터를 멤버변수에 복사
+    
+
+          // [교재 예제 5-11]의 복사 생성자  참조할 것
+          // strlen(), strcpy() 함수는 구글링 또는 http://www.cplusplus.com/reference/에서 검색
+          // strlen()은 끝의 null 문자를 포함하지 않은 길이이므로 
+          // 이를 포함하기 위해 할당해야 할 메모리는 strlen()+1이어야 함 
+          // strcpy()는 끝의 null 문자도 함께 복사해 준다라는 사실에 유의하라.
+}
+
+// 복사 생성자에 의해 처음 메모 문자열 memo_c_str을 초기화할 때 호출된다. 
+// 복사 생성자에서만 호출되고 일반 생성자에서는 nullptr로 설정됨
+void Person::copyMemo(const char* c_str)      {
+    // TODO: 매개변수 c_str가 nullptr인 경우, memo_c_str만 nullptr로 설정하고 리턴하라.
+    //       매개변수 c_str가 포인터하는 문자열을 포함할 수 있는 배열 메모리를 할당 받아 
+    //       멤버 memo_c_str에 주소를 저장하고 매개변수의 문자열을 멤버 변수로 복사한다.
+    if( c_str == nullptr ){
+        memo_c_str = nullptr;
+        return;
+    }
+
+    char* tmp = new char[strlen(c_str)+1];
+    strcpy(tmp,c_str);
+    memo_c_str = tmp;    
+}
+
+
+// 생성자 또는 복사생성자에 의해 이미 한번 초기화된 주소 문자열(기존의 주소)을 다른 주소로 변경할 때 호출됨 
+// 이미 멤버 address용 메모리가 할당되었기 때문에 기존 메모리를 먼저 반납해야 하고 새로 할당해야 함
+void Person::setAddress(const char* address) {
+    //TODO: 기존의 멤버 address가 nullptr이 아닌 경우
+    if( this->address != nullptr ){
+    cout << "old address(" << this->address << ") deleted" << endl;
+    //멤버 address가 포인터하는 [배열] 메모리를 반납한다. 반납시 [] 를 꼭 사용해야 한다.
+    delete[] this->address;
+    }
+
+    copyAddress(address); // 새로 메모리 할당받은 후 복사한다.
+}
+
+// 멤버 memo_c_str은 생성자에 의해 nullptr로 설정되었거나 복사생성자에 의해 이미 초기화되었 수도 있음
+// 만약 멤버 memo_c_str용 메모리가 할당되었다면 먼저 반납해야 함
+void Person::setMemo(const char* c_str)      {
+    // TODO: 기존의 멤버 memo_c_str가 nullptr이 아닌 경우
+    if( this->memo_c_str != nullptr ){
+        cout << "old memo_c_str deleted" << endl;
+        //멤버 memo_c_str가 포인터하는 [배열] 메모리를 반납한다. []를 잊지 마라.
+        delete[] this->memo_c_str;
+    }
+
+    copyMemo(c_str); // 새로 메모리 할당받아 복사한다.
+}
 
 /******************************************************************************
  * User Interface
@@ -281,9 +414,13 @@ void run();
 //TODO: mStr의 C 스트링 문자열(string의 적절한 멤버 함수 호출할 것)을 리턴하라.
 const char *get_c_str() { return mStr.c_str(); }
 
-//TODO: C 스트링 문자열 c_str을 Memo 클래스의 mStr에 대입(=)하여 저장하라.
-void set_c_str(const char *c_str) { mStr = c_str; }
-// = 연산자의 좌우 데이타 타입이 달라도 C 스트링 문자열인 c_str이 string mStr 내부로 복사된다.
+void set_c_str(const char *c_str) {// C 문자열로 메모 mStr 초기화
+// TODO: 매개변수 c_str이 nullptr일 경우 mStr을 ""로 설정하고 
+//       아닌 경우 mStr을 c_str로 설정하라. 
+//       mStr = ? : ; 3항 연산자를 사용하여 한 문장으로 완성하라.
+mStr = c_str==nullptr?"":c_str;
+}  
+
 };
 
 void Memo::displayMemo() { // Menu item 1
@@ -1301,7 +1438,7 @@ public:
         p.set("p", 2, 80, false, "Seoul");
         cout << "p: "; p.println();   // p와 u은 동일한 객체 메모리를 공유하므로 항상 내용이 동일함
         cout << "u: "; u.println();
-        u = backup;       // u 값을 원래 값으로 복구
+        u.assign(backup);
         // 매개변수 p는 참조이므로 함수 리턴 시 소멸자가 호출되지 않음
     }
 
@@ -1313,7 +1450,7 @@ public:
         p->set("p", 2, 80, false, "Seoul");
         cout << "p: "; p->println();   // p는 u 메모리를 포인터하므로 항상 동일한 내용이 출력됨
         cout << "u: "; u.println();
-        u = backup;       // u 값을 원래 값으로 복구
+        u.assign(backup);       // u 값을 원래 값으로 복구
         // 매개변수 p는 포인터이므로 함수 리턴 시 소멸자가 호출되지 않음
     }
 
@@ -1389,7 +1526,7 @@ public:
         r.set("r", 2, 80, false, "Seoul");
         cout << "r: "; r.println();
         cout << "u: "; u.println();
-        u = backup;
+        u.assign(backup);
         // 함수 리턴 시 지역 객체 p의 경우 소멸자 함수가 호출되지만
         //           참조 변수 r는 소멸자가 호출되지 않음
     }
@@ -1413,7 +1550,7 @@ public:
         p->set("p", 2, 80, false, "Seoul"); // p는 u 객체를 포인터하므로 u과 동일한 메모리를 공유함
         cout << "p: "; p->println();
         cout << "u: "; u.println();
-        u = backup;
+        u.assign(backup);
         // 함수 리턴 시 p는 포인터 변수이므로 소멸자가 호출되지 않음
     }
 
@@ -1429,7 +1566,7 @@ public:
     void inputPerson() { // Menu item 7
     	cout << "u: "; u.println();
         while (!UI::inputPerson(&u)) ;  // USER 11 88 false :DONG-GU, DAEGU:
-        backup = u;
+        backup.assign(u);
         cout << "u: "; u.println();
     }
 
@@ -1493,10 +1630,107 @@ class AllocatedMember
     Person  u;
     Memo    memo;
 
+    void set_print_address(Person& p, const char* address) {
+        cout << "p.setAddress(" << (address? address : "") << ")" << endl;
+        p.setAddress(address);
+        p.println();
+        cout << endl;
+    }
+    void changeAddress() { // Menu Item 1
+        Person p("p", 1, 70, true, "Gwangju");
+        set_print_address(p, "short address");
+        set_print_address(p, "middle length Address, Seoul");
+        set_print_address(p, "long length Address Seoul Mapo-gu Korea");
+        set_print_address(p, u.getAddress());
+    }
+
+        void print_memo(Person& p) { // 객체 p의 메모 출력
+        cout << "------ " << p.getName() << " memo ------" << endl;
+        const char *pmemo = p.getMemo();
+        cout << (pmemo? pmemo : ""); // 메모 출력; nullptr이면 "" 출력
+        cout << "--------------------" << endl << endl;
+    }
+    void set_print_memo(Person& p, const char* memo) { // 객체 p에 메모 복사하고 출력
+        cout << "p.setMemo(memo)" << endl;
+        p.setMemo(memo);
+        print_memo(p);
+    }
+    void changeMemo() { // Menu Item 2
+        Person p("p", 1, 70, true, "Gwangju");
+        set_print_memo(p, "short memo\n");
+        set_print_memo(p, "middle long memo: The Last of the Mohicans\n");
+        set_print_memo(p, u.getMemo());
+    }
+
+    void manageMemo() { // Menu item 3
+        memo.set_c_str(u.getMemo());
+        memo.run();
+        cout << "\nmemo.run() returned" << endl;
+        u.setMemo(memo.get_c_str());   // 메모 메뉴에서 새로 삽입한 메모를 u에 저장 
+        print_memo(u);
+    }
+
+        Person call_by_value_and_return_value(Person p) { // 복사생성자로 p 초기화
+        cout << "p.setName(p)" << endl;
+        p.setName("p");
+        // 함수 리턴 전에 p를 p2에 복사해서 초기화(복사생성자)
+        cout << "p2: ";
+        return p; // 함수 리턴 시 p 소멸자 실행
+    }
+
+    void copyConstructor() { // Menu Item 4
+        cout << "u: ";    u.println();
+        print_memo(u);
+
+        cout << "Person p1(u)" << endl;
+        cout << "p1: ";
+        Person p1(u); // 명시적 복사생성자로 p1 초기화
+        p1.setName("p1");
+        p1.println();
+        print_memo(p1);
+
+        cout << "Person p2 = call_by_value_and_return_value(p1)" << endl;
+        // 묵시적으로 두번의 복사생성자 실행: 함수 인자를 넘길 때, 함수 리턴 값을 p2에 복사할 때
+        cout << "p: ";
+        Person p2 = call_by_value_and_return_value(p1);
+        cout << "call_by_value_and_return_value(p1) returned\n" << endl;
+        cout << "p2.setName(p2)" << endl;
+        p2.setName("p2");
+        p2.println();
+        print_memo(p2);
+        cout << "copyConstructor() returns" << endl;
+        // 함수 리턴 시 지역객체 p1, p2 소멸자 실행됨
+    }
+
+    void nullptrMember() { // Menu Item 5
+        u.println();
+        print_memo(u);
+        cout << "set address = memo_c_str = nullptr" << endl;
+        u.setAddress(nullptr);
+        u.setMemo(nullptr);
+        u.println();
+        print_memo(u);
+
+        cout << "memo.set_c_str(u.getMemo())" << endl;
+        memo.set_c_str(u.getMemo()); // u.getMemo() == nullptr이므로 memo의 mStr은 ""이다.
+        memo.displayMemo();
+
+        cout << endl << "u.setMemo(memo.get_c_str())" << endl;
+        u.setMemo(memo.get_c_str()); // memo.get_c_str() == nullptr 이므로
+                                      // u의 memo_c_str은 nullptr로 설정
+        print_memo(u);
+    }
+
+    void inputPerson() { // Menu item 6
+        cout << "u: "; u.println();
+        while (!UI::inputPerson(&u)) ;  // USER 11 88 false :DONG-GU, DAEGU:
+        cout << "u: "; u.println();
+    }
+
 public:
     AllocatedMember():
         u("u", 1, 70, true, "NAMDAEMUN-RO 123, JONGNO-GU, SEOUL, KOREA") {
-        //u.setMemo("It is believed that the Aborigines of the American continent");
+        u.setMemo("It is believed that the Aborigines of the American continent");//왜 줄바꿈이 없지 왜 없어도 통과되지
     }
 
     void run() {
@@ -1505,7 +1739,8 @@ public:
         // TODO 문제 [1]: func_t, func_arr[], menuCount 선언
         using func_t = void (AllocatedMember::*)();
         func_t func_arr[] = {
-            nullptr,
+            nullptr,&AM::changeAddress,&AM::changeMemo,&AM::manageMemo,
+            &AM::copyConstructor,&AM::nullptrMember,&AM::inputPerson
         };
         int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 길이
 
