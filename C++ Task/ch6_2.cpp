@@ -1892,7 +1892,7 @@ public:
         // TODO 문제 [3]: while 문장 삽입하여 선택된 메뉴항목 실행하는 함수를 호출하라.
         using func_t = void (CopyConstructor::*)();
         func_t func_arr[] = {
-            nullptr,&CC::explicitCopyConstructor,&CC::referenceVariable,//주소아니어도되는데?
+            nullptr,&CC::explicitCopyConstructor,&CC::referenceVariable,
             &CC::implicitCopyConstructor,&CC::temporaryObject,
             &CC::functionParameterType,&CC::returnDataType,
             &CC::inputPerson
