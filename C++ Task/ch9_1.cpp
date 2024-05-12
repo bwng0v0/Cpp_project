@@ -1,12 +1,13 @@
 /*
-* CH2: ch2.cpp
+* CH9: ch9_1.cpp
 *
-*  Created on: 2022. 5. 8.
+*  Created on: 2024. 5. 12
 *      Author: 김범중
-*  + Student, Worker를 다중 상속받는 StudentWorker 클래스 추가
-*  + MultiManager: StudentWorker 배열 데이타 추가
-*  + Inheritance: StudentWorker 관련 함수 추가
-*  + Factory 수정: Person, Student, Worker, StudentWorker 입력 받을 수 있게
+*  + Person 클래스에 virtual 함수 선언
+*    가상소멸자(), clone(), print(), input(), whatAreYouDoing(), operator==
+*  + 가상함수 오버라이딩: Student, Worker, StudentWorker 내에서 가상함수 오버라이딩,
+*  +     println() 제거, operator==(const ...& p)의 매개변수 타입을 Person& 로 통일
+*  + Factory 수정: 각 객체의 가상함수 p->input() 이용해 인적 정보 입력
 */
 #include <iostream>
 #include <cstring>
@@ -16,7 +17,7 @@ using namespace std;  // 헤드 파일은 반드시 이 문장 앞쪽에 include
 /******************************************************************************
  * 아래 상수 정의는 필요에 따라 변경하여 사용하라.
  ******************************************************************************/
-#define AUTOMATIC_ERROR_CHECK 0 // false: 자동 오류 체크, true: 키보드에서 직접 입력하여 프로그램 실행
+#define AUTOMATIC_ERROR_CHECK 1 // false: 자동 오류 체크, true: 키보드에서 직접 입력하여 프로그램 실행
 
 /******************************************************************************
  * Person structure and its manipulation functions
@@ -40,8 +41,8 @@ public:
     // Person(const string name);
     Person(const string& name={}, int id={}, double weight={}, bool married={}, const char *address={});
     Person(const Person& p);
-    ~Person();
-    Person* clone() { return new Person(*this); } // ch7_3에서 추가
+    virtual ~Person();
+    virtual Person* clone() { return new Person(*this); } // ch7_3에서 추가
 
     void set(const string& pname, int pid, double pweight, bool pmarried, const char *paddress);
     void setName(const string& pname)      { name = pname; }
@@ -56,10 +57,10 @@ public:
     bool        getMarried() const{  return married; }  // 리턴 값들을
     const char* getAddress() const{  return address; } // 수정하시오.
 
-    void input(istream& in)  { inputMembers(in); } // ch3_2에서 추가
-    void print(ostream& out) { printMembers(out); }
+    virtual void input(istream& in)  { inputMembers(in); } // ch3_2에서 추가
+    virtual void print(ostream& out) { printMembers(out); }
     void println()            { print(cout); cout << endl; }
-    void whatAreYouDoing();                          // ch3_2에서 추가
+    virtual void whatAreYouDoing();                          // ch3_2에서 추가
     bool isSame(const string& name, int pid);         // ch3_2에서 추가
     void setMemo(const char* c_str);      // 5_2에서 수정
     const char* getMemo()    { return memo_c_str; }
@@ -68,7 +69,7 @@ public:
     // Person& assign(const Person& p);
 
     //연산자 오버로딩
-    bool operator == (const Person &p){
+    virtual bool operator == (const Person &p){
         return isSame(p.getName(),p.getId());
     }
 
@@ -233,8 +234,8 @@ public:
             bool married={}, const char* address={},
             const string& department={}, double GPA={}, int year={});
     Student(const Student& s); // copy constructor
-    ~Student();
-    Person* clone(){ return new Student(*this); }//자동 업캐스팅
+    ~Student() override;
+    Person* clone() override{ return new Student(*this); }//자동 업캐스팅
 
     // Getter and Setter
     int           getYear()       const{return year;}
@@ -246,17 +247,17 @@ public:
     void setGPA(double GPA){ this->GPA = GPA; }
 
     // 부모(기본) 클래스의 멤버 함수 재정의: Redefined member functions
-    void input(istream& in);
-    void print(ostream& out);
-    void println() { print(cout); cout << endl; }
-    void whatAreYouDoing();
+    void input(istream& in) override;
+    void print(ostream& out) override;
+    void whatAreYouDoing() override;
 
     // 새로 추가된 멤버 함수: Member functions added in Student
     void study();
     void takeClass();
 
-    bool operator == (const Student& s){
-        return *(Person*)this==s && department==s.department && year==s.year;
+    bool operator == (const Person& p) override{
+        const Student& s = dynamic_cast< const Student& >(p); // 다운 캐스팅
+        return Person::operator==(p) && department==s.department && year==s.year;
         //return (Person)*this==s && department==s.department && year==s.year;
     }
 };
@@ -326,8 +327,8 @@ public:
             bool married={}, const char* address={},
             const string& company={}, const string& position={});
     Worker(const Worker& w); // copy constructor
-    ~Worker();
-    Person* clone(){ return new Worker(*this); }
+    ~Worker() override;
+    Person* clone() override{ return new Worker(*this); }
 
     // Getter and Setter
     const string& getCompany()  const{return company;}
@@ -337,14 +338,14 @@ public:
     void setPosition(const string& position){ this->position = position; }
 
     // 부모(기본) 클래스의 멤버 함수 재정의: Redefined member functions
-    void input(istream& in);
-    void print(ostream& out);
-    void println() { print(cout); cout << endl; }
+    void input(istream& in) override;
+    void print(ostream& out) override;
 
-    bool operator==(const Worker& w){
-        return *(Person*)this==w && company==w.company && position==w.position;
+    bool operator==(const Person& p) override{
+        const Worker& w = dynamic_cast< const Worker& >(p); // 다운 캐스팅
+        return Person::operator==(p) && company==w.company && position==w.position;
     }
-    void whatAreYouDoing();
+    void whatAreYouDoing() override;
 
     // 새로 추가된 멤버 함수: Member functions added in Worker
     void work();
@@ -426,8 +427,8 @@ public:
     );
 
     StudentWorker(const StudentWorker& a); // copy constructor
-    ~StudentWorker();
-    Person* clone();
+    ~StudentWorker() override;
+    Person* clone() override;
 
     // Getter and Setter
     const string& getCareer()  const{ return career; }
@@ -437,12 +438,11 @@ public:
     void setMale(bool male){ this->male = male; }
 
     // Redefined member functions
-    void input(istream& in);
-    void print(ostream& out);
-    void println() { print(cout); cout << endl; }
+    void input(istream& in) override;
+    void print(ostream& out) override;
 
-    bool operator==(const StudentWorker& a);
-    void whatAreYouDoing();
+    bool operator==(const Person& p) override;
+    void whatAreYouDoing() override;
 };
 
 StudentWorker::StudentWorker(
@@ -511,8 +511,10 @@ void StudentWorker::whatAreYouDoing() {
     cout << "###########################################################\n";
 }
 
-bool StudentWorker::operator==(const StudentWorker& a){
-    return *(Student*)this == a && *(Worker*)this == a && this->male == a.male;
+bool StudentWorker::operator==(const Person& p) {
+    const StudentWorker& a = dynamic_cast< const StudentWorker& >(p);
+    // return *(Student*)this == a && *(Worker*)this == a && this->male == a.male;
+    return Student::operator==(a) && Worker::operator==(a) && male == a.male;
 }
 
 void StudentWorker::print(ostream& out){
@@ -523,7 +525,7 @@ Person* StudentWorker::clone(){
     return new StudentWorker(*this);
 }
 
-void StudentWorker::input(istream& in){
+void StudentWorker::input(istream& in) {
     Person::inputMembers(in);if (!in) return;
     Student::inputMembers(in);if (!in) return;
     Worker::inputMembers(in);if (!in) return;
@@ -1063,9 +1065,23 @@ void CurrentUser::whatAreYouDoing() {  // Menu item 5
     rUser.whatAreYouDoing();
 }
 
+// void CurrentUser::isSame() { // Menu item 6
+//     rUser.println();
+//     cout << "isSame(\"user\", 1): " << rUser.isSame("user", 1) << endl;
+// }
 void CurrentUser::isSame() { // Menu item 6
-    rUser.println();
-    cout << "isSame(\"user\", 1): " << rUser.isSame("user", 1) << endl;
+    Person* p = rUser.clone(); // 현재 로그인한 객체를 동일하게 복사함
+    cout << "rUser: "; rUser.println();
+    cout << "p    : "; p->println();
+    cout << "(rUser == p): " << (rUser == *p) << endl; // 같아야 함
+    // 아래 입력 시 현재 로그인한 객체와 동일한 양식으로 인적정보를 입력해야 함
+    UI::inputPerson(*p);
+    // 즉, 현재 Student(or Worker)으로 로그인했다면 [구분자] 없이 학생(or 노동자)정보를 입력해야 함
+    // 현 객체의 오버라이딩된 input(istream& in) 함수가 바로 호출되므로 구분자가 필요없다.
+    cout << "rUser: "; rUser.println();
+    cout << "p    : "; p->println();
+    cout << "(rUser == p): " << (rUser == *p) << endl;
+    delete p;
 }
 
 void CurrentUser::inputPerson() { // Menu item 7
@@ -1307,12 +1323,12 @@ void VectorPerson::insert(int index, Person* p) {
 /******************************************************************************
  * ch4_2: Factory class
  ******************************************************************************/
-
 class Factory
 {
 public:
     // 동적으로 Person 객체를 할당 받은 후 키보드로부터 새로 추가하고자 하는 사람의
     // 인적정보를 읽어 들여 해당 객체에 저장한 후 그 객체의 포인터를 반환한다.
+	
     static Person* inputPerson(istream& in) {
         Person* p;
         string delimiter;
@@ -1321,31 +1337,21 @@ public:
 
         if (in.eof())                 // 파일(입력장치가 파일인 경우)의 끝일 경우
         	return nullptr;
-        else if (delimiter == "P") {
-            p = new Person();  p->input(in);
-        }
-        else if (delimiter == "S") {
-            Student* s = new Student();
-            s->input(in);
-            p = s;
-        }
-        else if (delimiter == "W") {
-            Worker* w = new Worker();
-            w->input(in);
-            p = w;
-        }
-        else if (delimiter == "A") {
-            StudentWorker* sw = new StudentWorker();
-            sw->input(in);
-            p = sw;
-        }
+        else if (delimiter == "P") p = new Person(); 
+        else if (delimiter == "S") p = new Student();
+        else if (delimiter == "W") p = new Worker();
+        else if (delimiter == "A") p = new StudentWorker();
         else {
             cout << delimiter << ": WRONG delimiter" << endl;
             getline(in, delimiter); // 엉뚱한 구분자일 경우 행 전체를 읽어서 버림
             return nullptr;
         }
-
-        // p->input(in);  // 멤버들을 입력 받음: 9장에서 이 주석을 다시 해제할 예정이다.
+        //---------------------------------------------------------------------
+        // 주목: 아래 p->input(in)은 Person의 포인터 변수 p를 이용해 
+        //      Person::input(istream&)을 호출했을 뿐이데 p가 포인트하는 실제 객체의  
+        //      종류에 따라 오버라이딩된 파생 클래스의 input()이 호출된다. (다형성)
+        //---------------------------------------------------------------------
+        p->input(in);  // 각 클래스별 멤버들을 모두 입력 받음
 
         if (UI::checkDataFormatError(in)) { // 정수입력할 곳에 일반 문자 입력한 경우
             delete p;         // 할당된 메모리 반납
@@ -1439,7 +1445,7 @@ deleteElemets();
 void PersonManager::deleteElemets() {
 cpCount = 0;
 for(int i=0; i<persons.size(); i++){
-    // delete persons[i];
+    delete persons[i];
 }
 persons.clear();
 }
@@ -1563,7 +1569,7 @@ func_t func_arr[] = {
 int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 길이
 string menuStr =
     "====================== Person Management Menu ===================\n"
-    "= 0.Exit 1.Display 2.Append 3.Clear 4.Login(CurrentUser, ch6)   =\n"
+    "= 0.Exit 1.Display 2.Append 3.Clear 4.Login(CurrentUser, ch9)   =\n"
     "= 5.Insert(6_2) 6.Delete(6_2) 7.CopyPersons(7_3) 8.Reset(7_3)   =\n"
     "=================================================================\n";
 
@@ -2834,7 +2840,7 @@ class Inheritance
         cout << "s3: "; s3->println();
         cout << "s1: "; s1.println();;
         cout << "s3 == s1 : " << (*s3 == s1) << endl;
-        //delete s3;
+        delete s3;
         cout << "input student: ";
         s2.input(cin); // s1 1 66.6 false :Kangnam-gu Seoul: Physics 3.0 1
         if (UI::echo_input) s2.println(); // 자동체크에서 사용됨
@@ -2866,7 +2872,7 @@ class Inheritance
         cout << "w3: "; w3->println();
         cout << "w1: "; w1.println();;
         cout << "w3 == w1 : " << (*w3 == w1) << endl;
-        //delete w3;
+        delete w3;
 
         cout << "input worker: ";
         w2.input(cin); // w1 3 44.4 true :Jongno-gu Seoul: Samsung Director
@@ -2902,7 +2908,7 @@ class Inheritance
         cout << "sw1: "; sw1.println();
         cout << "p3 == sw1 : " << (*p3 == sw1) << endl; // Person 정보만 비교함
         // 위의 경우 p3가 Person* 이므로 Person 클래스의 ==연산자가 호출된다.
-        //delete p3; 
+        delete p3; 
         // 위 문장의 주석은 p3가 Person에 대한 포인터이므로 메모리 반납시 프로그램이 비 정상적으로 
         // 종료될 수 있어서 주석 처리한 것임; 9장에서 해결
         cout << "input alba: ";
@@ -2949,7 +2955,7 @@ public:
         int menuCount = 7; // 상수 정의
         string menuStr =
 "******************************* Main Menu *********************************\n"
-"* 0.Exit 1.PersonManager(ch3_2, 4, 6, 7_2, 8)                             *\n"
+"* 0.Exit 1.PersonManager(ch3_2, 4, 6, 7_2, 8, 9)                          *\n"
 "* 2.Class:Object(ch3_1) 3.CopyConstructor(ch5_1) 4.AllocatedMember(ch5_2) *\n"
 "* 5.OperatorOverload(ch7_1) 6.Inheritance(ch8)                            *\n"
 "***************************************************************************\n";
@@ -2994,7 +3000,7 @@ int main() {
     cin >> boolalpha;   // bool 타입 값을 0, 1 대신 true, false로 입력 받도록 설정
 
 #if AUTOMATIC_ERROR_CHECK
-    evaluate(0);   // 각 문제에 대해 단순히 O, X만 확인하고자 할 때는 false
+    evaluate(1);   // 각 문제에 대해 단순히 O, X만 확인하고자 할 때는 false
 #else
     run();
 #endif
