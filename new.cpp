@@ -18,13 +18,13 @@ tm* local_time = localtime(&now_c);
 
 string date = to_string((local_time->tm_mon + 1)) + "." + to_string(local_time->tm_mday);
 
-if( filesystem::exists(date+".cpp") ){
+if( filesystem::exists("GOODTIME/"+date+".cpp") ){
     //같은이름의 파일이 이미 존재한다면
     ofstream outputFile(date+".cpp",ios::app);
     cout<<"파일이 이미 있는데요? 아무튼 오늘도 화이팅!\n";
 }else{
     //파일이 없다면
-    ofstream outputFile(date+".cpp",ios::app);
+    ofstream outputFile("GOODTIME/"+date+".cpp",ios::app);
     ifstream inputFile("setting.cpp");
     if( inputFile.is_open() && outputFile.is_open() ){
         outputFile << inputFile.rdbuf();
