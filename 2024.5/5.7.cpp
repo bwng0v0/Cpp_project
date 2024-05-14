@@ -1,4 +1,4 @@
-//https://www.acmicpc.net/problem/2667
+//https://www.acmicpc.net/problem/2667 단지번호붙이기
 #include <iostream>
 #include <queue>
 #include <algorithm>
