@@ -17,7 +17,7 @@ using namespace std;  // 헤드 파일은 반드시 이 문장 앞쪽에 include
 /******************************************************************************
  * 아래 상수 정의는 필요에 따라 변경하여 사용하라.
  ******************************************************************************/
-#define AUTOMATIC_ERROR_CHECK 1 // false: 자동 오류 체크, true: 키보드에서 직접 입력하여 프로그램 실행
+#define AUTOMATIC_ERROR_CHECK 0 // false: 자동 오류 체크, true: 키보드에서 직접 입력하여 프로그램 실행
 
 /******************************************************************************
  * Person structure and its manipulation functions
@@ -3000,7 +3000,7 @@ int main() {
     cin >> boolalpha;   // bool 타입 값을 0, 1 대신 true, false로 입력 받도록 설정
 
 #if AUTOMATIC_ERROR_CHECK
-    evaluate(1);   // 각 문제에 대해 단순히 O, X만 확인하고자 할 때는 false
+    evaluate(0);   // 각 문제에 대해 단순히 O, X만 확인하고자 할 때는 false
 #else
     run();
 #endif
