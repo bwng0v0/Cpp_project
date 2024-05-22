@@ -20,7 +20,7 @@ string date = to_string((local_time->tm_mon + 1)) + "." + to_string(local_time->
 
 if( filesystem::exists("GOODTIME/"+date+".cpp") ){
     //같은이름의 파일이 이미 존재한다면
-    ofstream outputFile(date+".cpp",ios::app);
+    ofstream outputFile("GOODTIME/"+date+".cpp",ios::app);
     cout<<"파일이 이미 있는데요? 아무튼 오늘도 화이팅!\n";
 }else{
     //파일이 없다면
