@@ -1,5 +1,5 @@
 //
-#include <iostream>
+#include <bits/stdc++.h>
 #define fastio ios::sync_with_stdio(false), cin.tie(nullptr), cout.tie(nullptr);
 using namespace std;
 
