@@ -31,7 +31,8 @@ if( filesystem::exists("GOODTIME/"+date+".cpp") ){
         cout<<"오늘도 화이팅!\n";
     }else cout<<"어 파일이 안열려요\n";
 }
-
+cout<<"\n\n";
+string s; getline(cin,s);
 
     return 0;
 }
