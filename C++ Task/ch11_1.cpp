@@ -1,12 +1,24 @@
 /******************************************************************************
- * 이번 문제의 목적: STL(standard template library) 활용하기
- ******************************************************************************/
-// map< T >, priority_queue< >, pair< > 등의 템플릿 클래스들을 활용해 본다. 
-//----------------------------------------------------------------------------
-//  *  + CppSTL 클래스의 추가적인 멤버 함수 구현 (메뉴항목 추가)
-//  *    6.DispMemo 7.CountWord 8.Top10WordCount 9.CopyPersons
-//  *  + PersonManager의 일부 멤버 함수 코드를 알고리즘 함수 호출하도록 수정
-//  *    findByName(), find()
+ * 이번 문제의 목적: 기존 클래스에 입출력 연산자 <<, >> 추가하기
+ *              출력 조작자(manipulator)를 활용하여 원하는 양식으로 출력하기
+                입출력 조작자 만들어 보기
+******************************************************************************/
+// Person, SmartPhone 클래스에 입출력 연산자 <<, >> 추가한 후 이 연산자를 이용하여 객체를 출력한다.
+// 기존 출력 조작자를 이용하여 Person 객체를 출력할 때 양식에 맞추어 출력해 본다.
+// 우리가 원하는 입출력 조작자를 작성한 후 이를 활용해 본다.
+//  *      + Person: printFormat() 관련 함수 추가
+//  *      + Person: 입출력 연산자 << 와 >> 를 추가 
+//  *      + SmartPhone: 출력 연산자 << 추가 
+//           PersonManager::dispPhones()에서 이 연산자 이용하여 출력하도록 수정
+//  *      + UI::display(), CurrentUser::display(), setter(), set(), isSame(),
+//  *        PersonManager::find(), dispStudentWorkers(),
+//  *        Factory::inputPerson() 등에서
+//  *        출력 연산자 << 이용하여 출력하도록 수정
+//  *      + CurrentUser::display(): Person 출력 뒤에 SmartPhone도 출력하게 수정
+//  *      + I/O Manipulator: question, drawDashLine, printIndex 추가
+//  *      + Person, Student, Worker, StudWorker 클래스 등에서
+//  *        printFormat(), printFormatMembers() 멤버함수 추가
+//  *      + PersonManager::dispFormat() 추가
 #include <iostream>
 #include <cstring>
 #include <string>
@@ -16,6 +28,7 @@
 #include <map>
 #include <algorithm>
 #include <queue>      // ch10_3 추가
+#include <iomanip>
 using namespace std;  // 헤드 파일은 반드시 이 문장 앞쪽에 include해야 한다.
 
 /******************************************************************************
@@ -102,6 +115,8 @@ public:
     void print(ostream& out) { out << owner << "'s Phone: " << getMaker(); }
     void println() { print(cout); cout << endl; }
 };
+
+ostream& operator<<(ostream& out, SmartPhone& p){ p.print(out); return out; }
 
 //----------------------------------------------------------------------------
 // GalaxyPhone class
@@ -316,6 +331,23 @@ public:
 
     virtual void input(istream& in)  { inputMembers(in); } // ch3_2에서 추가
     virtual void print(ostream& out) { printMembers(out); }
+
+    void printFormatMembers(ostream& out){ // 11_1에서 추가
+        out<<left<<setw(5)<<setfill(' ')<<name<<" ";
+        out<<setw(5)<<hex<<showbase<<right<<id<<" ";
+        cout<<setw(4)<<fixed<<setprecision(1)<<weight<<" ";
+        out<<left<<setw(5)<<married<< " :";
+        out<<(address==nullptr?"":address)<< ":";
+
+        // cout<<left<<setw(5)<<name;
+        // cout<<setw(5)<<hex<<showbase<<id;
+        // cout<<setw(4)<<fixed; cout.precision(3); cout<<weight;
+        // cout<<left<<setw(5)<<married;
+
+        cout<<dec<<setprecision(6)<<right<<defaultfloat;  
+    }
+    virtual void printFormat(ostream& out){ printFormatMembers(out); } // 11_1에서 추가
+
     void println()            { print(cout); cout << endl; }
     virtual void whatAreYouDoing();                          // ch3_2에서 추가
     bool isSame(const string& name, int pid);         // ch3_2에서 추가
@@ -500,6 +532,8 @@ void Person::setSmartPhone(SmartPhone* smPhone){
     }
 }
 
+ostream& operator<<(ostream& out, Person& p){ p.print(out); return out; }
+istream& operator>>(istream& in, Person& p ){ p.input(in); return in; }
 
 /******************************************************************************
  * ch8_1: Student class
@@ -513,6 +547,16 @@ class Student: virtual public Person {
 protected:
     void inputMembers(istream& in);
     void printMembers(ostream& out);
+    void printFormat(ostream& out) override{
+        Person::printFormatMembers(out); printFormatMembers(out);
+    }
+    void printFormatMembers(ostream& out){; // 11_1에서 추가
+        out << " " << department << " ";
+        out <<fixed<<setprecision(1)<<GPA;
+        out << " " << year;
+
+        out<<setprecision(6)<<defaultfloat;
+    }
 
 public:
     Student(const string& name={}, int id={}, double weight={},
@@ -606,6 +650,12 @@ class Worker: virtual public Person {
 protected:
     void inputMembers(istream& in);
     void printMembers(ostream& out);
+    void printFormat(ostream& out) override{
+        Person::printFormatMembers(out); printFormatMembers(out);
+    }
+    void printFormatMembers(ostream& out){
+        printMembers(out);
+    }
 
 public:
     Worker(const string& name={}, int id={}, double weight={},
@@ -701,6 +751,13 @@ class StudentWorker /* TODO: [문제 1]Student와 Worker 클래스들을 다중 
 protected:
     void inputMembers(istream& in);
     void printMembers(ostream& out);
+    void printFormat(ostream& out) override{
+        Person::printFormatMembers(out); Student::printFormatMembers(out);
+        Worker::printFormatMembers(out); printFormatMembers(out);
+    }
+    void printFormatMembers(ostream& out){
+        out << " :" << career << ": " <<noboolalpha<< male<<boolalpha;
+    }
 
 public:
     StudentWorker(
@@ -818,6 +875,41 @@ void StudentWorker::input(istream& in) {
 }
 
 
+/*****************************************************************************
+ * ch11_1: I/O Manipulator
+ *****************************************************************************/
+
+ostream& drawDashLine(ostream& out){
+    cout << "--------------------" << endl;
+    return out;
+}
+
+class question { // 매개변수가 있는 조작자를 만들기 위한 클래스
+    const string& msg;
+public:
+    question(const string& msg): msg{msg} { } // 생성자
+    friend istream& operator >> (istream& in, const question& qst);
+};
+// question 클래스의 입력 연산자: 단순히 question 객체에 저장된 msg를 출력해주는 역할을 한다. 
+istream& operator >> (istream& in, const question& qst) {
+    cout << qst.msg;
+    return in;
+}
+
+class printIndex{
+    int index;
+    public:
+    printIndex(int i): index(i) { }
+    friend ostream& operator<<(ostream& out, printIndex p);
+};
+ostream& operator<<(ostream& out, printIndex p) {// 두번째 매개변수는 const& or value
+    out<< "[" << p.index << "] ";
+    return out;
+}
+
+
+
+
 /******************************************************************************
  * User Interface
  ******************************************************************************/
@@ -860,23 +952,21 @@ bool UI::checkDataFormatError(istream& in) {
 // 한 사람의 정보 즉, 각 멤버 데이터를 순서적으로 입력 받아 p에 저장하고
 // 입력 중 입력 데이터에 오류가 있는지 확인하고 오류가 있을 시 에러 메시지를 출력한다.
 bool UI::inputPerson(Person& p) {
-    cout << "input person information:" << endl;
-    p.input(cin);
+   cin>>question("input person information:\n")>>p;
     if (checkDataFormatError(cin)) return false;
-    if (echo_input) p.println(); // 자동체크에서 사용됨
+    if (echo_input) cout<<p<<"\n"; // 자동체크에서 사용됨
     return true;
 }
 // 입력장치에서 하나의 단어로 구성된 문자열을 입력 받음
 const string& UI::getNext(const string& msg) {
-cout << msg; // 입력용 메시지를 출력
-cin >> line; // 하나의 단어를 읽어 들임
+cin >> question(msg) >> line;   
 if (echo_input) cout << line << endl; // 자동체크 시 출력됨
 getline(cin, emptyLine); // 입력받은 한 단어 외 그 행의 나머지 데이타(엔터포함)는 읽어서 버림
 return line;             // 이유는 여기서 [엔터]를 제거하지 않으면 
 }                            // 다음의 getNextLine()에서 엔터만 읽어 들일 수 있기 때문에
 // 입력장치에서 한 행을 입력 받음
 const string& UI::getNextLine(const string& msg) {
-cout << msg; // 입력용 메시지를 출력
+cin>>question(msg); // 입력용 메시지를 출력
 getline(cin, line); // 한 행을 읽어 들임
 if (echo_input) cout << line << endl; // 자동체크 시 출력됨
 return line;
@@ -884,8 +974,7 @@ return line;
 // 하나의 정수를 입력 받음; 정수가 아닌 아닌 문자열 입력시 에러 메시지 출력 후 재입력 받음
 int UI::getInt(const string& msg) {
     for (int value; true; ) {
-        cout << msg;
-        cin >> value;
+        cin>>question(msg)>>value;
         if (echo_input) cout << value << endl; // 자동체크 시 출력됨
         if (checkInputError(cin, "Input an INTEGER.\n"))
             continue;
@@ -968,7 +1057,7 @@ cout << "------- Memo -------" << endl;
 cout << mStr;
 if (mStr.length() > 0 && mStr[mStr.length()-1] != '\n')
     cout << endl; // 메모 끝에 줄바꾸기 문자가 없을 경우 출력
-cout << "--------------------" << endl;
+cout<<drawDashLine;
 }
 
 void Memo::findString() {
@@ -1085,12 +1174,12 @@ for(size_t pos = 0; pos<mStr.size(); ){//pos증감은 get_next_line(&pos)에서 
 
 string line;
 get_next_line(pos, line);
-cout<<"["<<i<<"] "<<line;
+cout<<printIndex(i)<<line;
 if (line.size() > 0 && line[line.size()-1] != '\n')
     cout << "\n"; // 메모 끝에 줄바꾸기 문자가 없을 경우 출력
 i += 1;
 }
-cout << "--------------------" << endl;
+cout<<drawDashLine;
 }
 
 // 행번호가 line_num(0부터 시작)인 행을 찾아 행의 시작 위치 *start와 행 길이 *plen를 계산함
@@ -1323,7 +1412,7 @@ public:
 };
 
 void CurrentUser::display() { // Menu item 1
-    rUser.println();
+    cout<<rUser<<"\n"<<*(rUser.getSmartPhone());
 }
 
 void CurrentUser::getter() { // Menu item 2
@@ -1339,14 +1428,14 @@ void CurrentUser::setter() { // Menu item 3
     rp.set(rUser.getWeight());
     rp.set(rUser.getMarried());
     rp.setAddress(rUser.getAddress());
-    cout << "rp.setMembers():"; rp.println();
+    cout << "rp.setMembers():"<<rp<<"\n";
 }
 
 void CurrentUser::set() { // Menu item 4
     Person p("rp"), &rp = p; // Person p("rp"); Person& rp = p;와 동일
     rp.set(rp.getName(), rUser.getId(), rUser.getWeight(),
             !rUser.getMarried(), rUser.getAddress());
-    cout << "rp.set():"; rp.println();
+    cout << "rp.set():"<<rp<<"\n";
 
 }
 
@@ -1360,15 +1449,15 @@ void CurrentUser::whatAreYouDoing() {  // Menu item 5
 // }
 void CurrentUser::isSame() { // Menu item 6
     Person* p = rUser.clone(); // 현재 로그인한 객체를 동일하게 복사함
-    cout << "rUser: "; rUser.println();
-    cout << "p    : "; p->println();
+    cout << "rUser: "<<rUser<<"\n";
+    cout << "p    : "<<*p<<"\n";
     cout << "(rUser == p): " << (rUser == *p) << endl; // 같아야 함
     // 아래 입력 시 현재 로그인한 객체와 동일한 양식으로 인적정보를 입력해야 함
     UI::inputPerson(*p);
     // 즉, 현재 Student(or Worker)으로 로그인했다면 [구분자] 없이 학생(or 노동자)정보를 입력해야 함
     // 현 객체의 오버라이딩된 input(istream& in) 함수가 바로 호출되므로 구분자가 필요없다.
-    cout << "rUser: "; rUser.println();
-    cout << "p    : "; p->println();
+    cout << "rUser: "<<rUser<<"\n";
+    cout << "p    : "<<*p<<"\n";
     cout << "(rUser == p): " << (rUser == *p) << endl;
     delete p;
 }
@@ -1674,8 +1763,7 @@ void BasePM::display(){
 int count = persons.size();
 cout << "display(): count " << count << endl;
 for (int i = 0; i < count; ++i) {
-    cout << "[" << i << "] ";
-    persons[i]->println();
+    cout << printIndex(i) << *(persons[i]) << endl;
 }
 }
 void BasePM::copyPersons(){
@@ -2000,15 +2088,15 @@ public:
         //      Person::input(istream&)을 호출했을 뿐이데 p가 포인트하는 실제 객체의  
         //      종류에 따라 오버라이딩된 파생 클래스의 input()이 호출된다. (다형성)
         //---------------------------------------------------------------------
-        p->input(in);  // 각 클래스별 멤버들을 모두 입력 받음
-
+        // p->input(in);  // 각 클래스별 멤버들을 모두 입력 받음
+        in>>*p;
         if (UI::checkDataFormatError(in)) { // 정수입력할 곳에 일반 문자 입력한 경우
             delete p;         // 할당된 메모리 반납
             return nullptr;   // nullptr 반환은 에러가 발생했다는 의미임
         }
         if (UI::echo_input) {  // 자동체크에서 사용됨
-            cout << delimiter << " ";
-            p->println();
+            cout << delimiter << " " << *p <<"\n";
+            // p->println();
         }
         return p;
     }
@@ -2046,6 +2134,7 @@ void login();
 void find();
 bool connectTo(const string& caller, const string& callee) override; //ch9_2 추가
 void cppSTL();
+void dispFormat();
 void run();
 void insert();
 void remove();
@@ -2233,7 +2322,7 @@ void PersonManager::find() { // Menu item 9
     auto comp = [p, &i, &found](Person* e) {
         ++i;
         if ((typeid(*p) == typeid(*e)) && (*p == *e)) {
-            cout << "[" << i << "] "; e->println();
+            cout <<printIndex(i)<<*e<<"\n";
             found = true;
         }
     };
@@ -2249,7 +2338,7 @@ void PersonManager::dispStudentWorkers() { // Menu item 10
     //      인자가 포인터면 인자 앞에 *를 붙여야만 함) 
     for( int i=0; i<persons.size(); i++ ){
         if( typeid(*persons[i]) == typeid(StudentWorker) ){
-            cout << "[" << i << "] "; persons[i]->println();
+            cout <<printIndex(i)<<*persons[i]<<"\n";
         }
     }
 }
@@ -2258,7 +2347,8 @@ void PersonManager::dispPhones() { // Menu item 11
     cout << "dispPhones(): count " << persons.size() << endl;
     // for를 이용하여 persons 벡터의 각 객체 포인터 persons[i]에 대해 
     for( int i=0; i<persons.size(); i++ ){
-        cout << "[" << i << "] "; persons[i]->getSmartPhone()->println();
+        // cout << "[" << i << "] "; persons[i]->getSmartPhone()->println();
+        cout <<printIndex(i)<< *(persons[i]->getSmartPhone()) << endl;
     }
         // 추상클래스 SmartPhone::println()->print()->가상함수 getMaker()-> 
         // 파생클래스(Galaxy 또는 IPhone)의 override된 getMaker() 함수가 실제 호출됨  
@@ -2281,6 +2371,22 @@ void PersonManager::cppSTL() {
     // CppSTL stl(persons, cpCount); stl.run(); 과 동일함
 }
 
+void PersonManager::dispFormat() {
+    cout << "dispFormat(): count " << persons.size() << endl;
+    int i = 0;
+    for (auto p: persons) {
+        // 인덱스 i를 [i++] 형식으로 화면에 출력하되, 인덱스 i를  
+        //     (폭 2, 우맞춤, 0으로 채움)으로 설정한 후 출력하라. (예:[01])
+        cout<<"[";
+        cout<<setw(2)<<setfill('0')<<i++;
+        cout<<"] ";
+        p->printFormat(cout);
+        cout << endl;
+
+        setfill(' ');
+    }
+}
+
 void PersonManager::run() {
 using func_t = void (PersonManager::*)();
 using PM = PersonManager; // 코딩 길이를 줄이기 위해
@@ -2288,7 +2394,7 @@ func_t func_arr[] = {
     nullptr, &PM::display, &PM::append, &PM::clear, &PM::login,
     &PM::insert, &PM::remove,&PM::copyPersons,&PM::reset,
     &PM::find,&PM::dispStudentWorkers,&PM::dispPhones,
-    &PM::cppSTL,
+    &PM::cppSTL,&PM::dispFormat,
 };
 int menuCount = sizeof(func_arr) / sizeof(func_arr[0]); // func_arr[] 길이
 string menuStr =
@@ -2296,7 +2402,7 @@ string menuStr =
     "= 0.Exit 1.Display 2.Append 3.Clear 4.Login(CurrentUser, ch9)   =\n"
     "= 5.Insert(6_2) 6.Delete(6_2) 7.CopyPersons(7_3) 8.Reset(7_3)   =\n"
     "= 9.Find(9_2) 10.DispAlbaStud(9_2) 11.DispPhones(9_2)           =\n"
-    "= 12.C++STL(10_2)                                               =\n"
+    "= 12.C++STL(10_2) 13.DispFormat(ch11)                           =\n"
     "=================================================================\n";
 
 while (true) {
@@ -3904,7 +4010,7 @@ public:
         int menuCount = 8; // 상수 정의
         string menuStr =
 "******************************* Main Menu *********************************\n"
-"* 0.Exit 1.PersonManager(ch3_2, 4, 6, 7_2, 8, 9, 10)                      *\n"
+"* 0.Exit 1.PersonManager(ch3_2, 4, 6, 7_2, 8, 9, 10, 11)                  *\n"
 "* 2.Class:Object(ch3_1) 3.CopyConstructor(ch5_1) 4.AllocatedMember(ch5_2) *\n"
 "* 5.OperatorOverload(ch7_1) 6.Inheritance(ch8) 7.PMbyVector               *\n"
 "***************************************************************************\n";
@@ -3950,7 +4056,7 @@ int main() {
     cin >> boolalpha;   // bool 타입 값을 0, 1 대신 true, false로 입력 받도록 설정
 
 #if AUTOMATIC_ERROR_CHECK
-    evaluate(0);   // 각 문제에 대해 단순히 O, X만 확인하고자 할 때는 false
+    evaluate(1);   // 각 문제에 대해 단순히 O, X만 확인하고자 할 때는 false
 #else
     run();
 #endif
