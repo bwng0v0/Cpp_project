@@ -16,7 +16,7 @@ time_t now_c = chrono::system_clock::to_time_t(now);
 // time_t를 tm 구조체로 변환하여 로컬 시간을 얻습니다.
 tm* local_time = localtime(&now_c);
 
-string date = to_string((local_time->tm_mon + 1)) + "." + to_string(local_time->tm_mday);
+string date = to_string(local_time->tm_year + 1900) + "." + to_string(local_time->tm_mon + 1) + "." + to_string(local_time->tm_mday);
 
 if( filesystem::exists("GOODTIME/"+date+".cpp") ){
     //같은이름의 파일이 이미 존재한다면
